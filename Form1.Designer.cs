@@ -86,13 +86,13 @@
 			this.radioButton2.Name = "radioButton2";
 			this.radioButton2.Size = new System.Drawing.Size(108, 17);
 			this.radioButton2.TabIndex = 5;
-			this.radioButton2.TabStop = true;
 			this.radioButton2.Text = "Best (FLAC/M4A)";
 			this.radioButton2.UseVisualStyleBackColor = true;
 			// 
 			// radioButton1
 			// 
 			this.radioButton1.AutoSize = true;
+			this.radioButton1.Checked = true;
 			this.radioButton1.Location = new System.Drawing.Point(6, 19);
 			this.radioButton1.Name = "radioButton1";
 			this.radioButton1.Size = new System.Drawing.Size(71, 17);
