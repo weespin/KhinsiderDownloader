@@ -146,6 +146,7 @@
 			this.Controls.Add(this.urllist_box);
 			this.Name = "Form1";
 			this.Text = "KhinsiderDownloader";
+			this.Load += new System.EventHandler(this.Form1_Load);
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
 			this.ResumeLayout(false);
