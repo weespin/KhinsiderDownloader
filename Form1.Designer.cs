@@ -56,14 +56,14 @@
 			this.textBox2.Multiline = true;
 			this.textBox2.Name = "textBox2";
 			this.textBox2.ReadOnly = true;
-			this.textBox2.Size = new System.Drawing.Size(628, 98);
+			this.textBox2.Size = new System.Drawing.Size(600, 98);
 			this.textBox2.TabIndex = 1;
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(637, 220);
+			this.button1.Location = new System.Drawing.Point(615, 220);
 			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(108, 23);
+			this.button1.Size = new System.Drawing.Size(130, 23);
 			this.button1.TabIndex = 2;
 			this.button1.Text = "Download";
 			this.button1.UseVisualStyleBackColor = true;
@@ -73,9 +73,9 @@
 			// 
 			this.groupBox1.Controls.Add(this.radioButton2);
 			this.groupBox1.Controls.Add(this.radioButton1);
-			this.groupBox1.Location = new System.Drawing.Point(637, 145);
+			this.groupBox1.Location = new System.Drawing.Point(609, 145);
 			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(118, 69);
+			this.groupBox1.Size = new System.Drawing.Size(146, 69);
 			this.groupBox1.TabIndex = 3;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "Audio Quality";
@@ -85,9 +85,9 @@
 			this.radioButton2.AutoSize = true;
 			this.radioButton2.Location = new System.Drawing.Point(6, 43);
 			this.radioButton2.Name = "radioButton2";
-			this.radioButton2.Size = new System.Drawing.Size(108, 17);
+			this.radioButton2.Size = new System.Drawing.Size(137, 17);
 			this.radioButton2.TabIndex = 5;
-			this.radioButton2.Text = "Best (FLAC/M4A)";
+			this.radioButton2.Text = "Best (FLAC/M4A/OGG)";
 			this.radioButton2.UseVisualStyleBackColor = true;
 			// 
 			// radioButton1
@@ -114,9 +114,9 @@
 			// 
 			// btn_DownloadPath
 			// 
-			this.btn_DownloadPath.Location = new System.Drawing.Point(637, 255);
+			this.btn_DownloadPath.Location = new System.Drawing.Point(649, 255);
 			this.btn_DownloadPath.Name = "btn_DownloadPath";
-			this.btn_DownloadPath.Size = new System.Drawing.Size(108, 23);
+			this.btn_DownloadPath.Size = new System.Drawing.Size(96, 23);
 			this.btn_DownloadPath.TabIndex = 5;
 			this.btn_DownloadPath.Text = "Select Path...";
 			this.btn_DownloadPath.UseVisualStyleBackColor = true;

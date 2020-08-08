@@ -185,6 +185,11 @@ namespace KhinsiderDownloader
 						format = ".ogg";
 						break;
 					}
+					if (cell.TextContent == "M4A")
+					{
+						format = ".m4a";
+						break;
+					}
 				}
 			}
 
