@@ -2,4 +2,4 @@
 A simple Bulk Khinsider downloader with GUI
 
 # Screenshots
-![Screenshot](https://yiff.nullcoreproject.net/i/9e9c9aa6.png)
+![Screenshot](https://yiff.nullcoreproject.net/i/5f24dfca.png)
