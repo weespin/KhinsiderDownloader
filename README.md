@@ -1,5 +1,6 @@
-# KhinsiderDownloader
-A simple Bulk Khinsider downloader with GUI
+# KhinsiderDownloader 🎵
+
+###A simple Bulk Khinsider downloader with GUI
 
 # Screenshots
-![Screenshot](https://yiff.nullcoreproject.net/i/9e9c9aa6.png)
+![Screenshot](https://yiff.nullcoreproject.net/i/14f8295f.png)

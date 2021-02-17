@@ -29,98 +29,99 @@
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-			this.urllist_box = new System.Windows.Forms.TextBox();
-			this.textBox2 = new System.Windows.Forms.TextBox();
-			this.button1 = new System.Windows.Forms.Button();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.radioButton2 = new System.Windows.Forms.RadioButton();
-			this.radioButton1 = new System.Windows.Forms.RadioButton();
-			this.downloadPath_label = new System.Windows.Forms.Label();
-			this.btn_DownloadPath = new System.Windows.Forms.Button();
+			this.txt_urllist = new System.Windows.Forms.TextBox();
+			this.txt_log = new System.Windows.Forms.TextBox();
+			this.btn_download = new System.Windows.Forms.Button();
+			this.box_quality = new System.Windows.Forms.GroupBox();
+			this.radio_betterquality = new System.Windows.Forms.RadioButton();
+			this.radio_mp3only = new System.Windows.Forms.RadioButton();
+			this.lbl_path = new System.Windows.Forms.Label();
+			this.btn_selectpath = new System.Windows.Forms.Button();
 			this.label1 = new System.Windows.Forms.Label();
-			this.groupBox1.SuspendLayout();
+			this.btn_opensearch = new System.Windows.Forms.Button();
+			this.box_quality.SuspendLayout();
 			this.SuspendLayout();
 			// 
-			// urllist_box
+			// txt_urllist
 			// 
-			this.urllist_box.Location = new System.Drawing.Point(3, 12);
-			this.urllist_box.Multiline = true;
-			this.urllist_box.Name = "urllist_box";
-			this.urllist_box.Size = new System.Drawing.Size(752, 127);
-			this.urllist_box.TabIndex = 0;
+			this.txt_urllist.Location = new System.Drawing.Point(3, 12);
+			this.txt_urllist.Multiline = true;
+			this.txt_urllist.Name = "txt_urllist";
+			this.txt_urllist.Size = new System.Drawing.Size(752, 127);
+			this.txt_urllist.TabIndex = 0;
 			// 
-			// textBox2
+			// txt_log
 			// 
-			this.textBox2.BackColor = System.Drawing.SystemColors.Control;
-			this.textBox2.Location = new System.Drawing.Point(3, 145);
-			this.textBox2.Multiline = true;
-			this.textBox2.Name = "textBox2";
-			this.textBox2.ReadOnly = true;
-			this.textBox2.Size = new System.Drawing.Size(600, 98);
-			this.textBox2.TabIndex = 1;
+			this.txt_log.BackColor = System.Drawing.SystemColors.Control;
+			this.txt_log.Location = new System.Drawing.Point(3, 145);
+			this.txt_log.Multiline = true;
+			this.txt_log.Name = "txt_log";
+			this.txt_log.ReadOnly = true;
+			this.txt_log.Size = new System.Drawing.Size(600, 98);
+			this.txt_log.TabIndex = 1;
 			// 
-			// button1
+			// btn_download
 			// 
-			this.button1.Location = new System.Drawing.Point(615, 220);
-			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(130, 23);
-			this.button1.TabIndex = 2;
-			this.button1.Text = "Download";
-			this.button1.UseVisualStyleBackColor = true;
-			this.button1.Click += new System.EventHandler(this.button1_Click);
+			this.btn_download.Location = new System.Drawing.Point(615, 220);
+			this.btn_download.Name = "btn_download";
+			this.btn_download.Size = new System.Drawing.Size(130, 23);
+			this.btn_download.TabIndex = 2;
+			this.btn_download.Text = "Download";
+			this.btn_download.UseVisualStyleBackColor = true;
+			this.btn_download.Click += new System.EventHandler(this.button1_Click);
 			// 
-			// groupBox1
+			// box_quality
 			// 
-			this.groupBox1.Controls.Add(this.radioButton2);
-			this.groupBox1.Controls.Add(this.radioButton1);
-			this.groupBox1.Location = new System.Drawing.Point(609, 145);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(146, 69);
-			this.groupBox1.TabIndex = 3;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Text = "Audio Quality";
+			this.box_quality.Controls.Add(this.radio_betterquality);
+			this.box_quality.Controls.Add(this.radio_mp3only);
+			this.box_quality.Location = new System.Drawing.Point(609, 145);
+			this.box_quality.Name = "box_quality";
+			this.box_quality.Size = new System.Drawing.Size(146, 69);
+			this.box_quality.TabIndex = 3;
+			this.box_quality.TabStop = false;
+			this.box_quality.Text = "Audio Quality";
 			// 
-			// radioButton2
+			// radio_betterquality
 			// 
-			this.radioButton2.AutoSize = true;
-			this.radioButton2.Location = new System.Drawing.Point(6, 43);
-			this.radioButton2.Name = "radioButton2";
-			this.radioButton2.Size = new System.Drawing.Size(137, 17);
-			this.radioButton2.TabIndex = 5;
-			this.radioButton2.Text = "Best (FLAC/M4A/OGG)";
-			this.radioButton2.UseVisualStyleBackColor = true;
+			this.radio_betterquality.AutoSize = true;
+			this.radio_betterquality.Location = new System.Drawing.Point(6, 43);
+			this.radio_betterquality.Name = "radio_betterquality";
+			this.radio_betterquality.Size = new System.Drawing.Size(137, 17);
+			this.radio_betterquality.TabIndex = 5;
+			this.radio_betterquality.Text = "Best (FLAC/M4A/OGG)";
+			this.radio_betterquality.UseVisualStyleBackColor = true;
 			// 
-			// radioButton1
+			// radio_mp3only
 			// 
-			this.radioButton1.AutoSize = true;
-			this.radioButton1.Checked = true;
-			this.radioButton1.Location = new System.Drawing.Point(6, 19);
-			this.radioButton1.Name = "radioButton1";
-			this.radioButton1.Size = new System.Drawing.Size(71, 17);
-			this.radioButton1.TabIndex = 4;
-			this.radioButton1.TabStop = true;
-			this.radioButton1.Text = "MP3 Only";
-			this.radioButton1.UseVisualStyleBackColor = true;
-			this.radioButton1.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
+			this.radio_mp3only.AutoSize = true;
+			this.radio_mp3only.Checked = true;
+			this.radio_mp3only.Location = new System.Drawing.Point(6, 19);
+			this.radio_mp3only.Name = "radio_mp3only";
+			this.radio_mp3only.Size = new System.Drawing.Size(71, 17);
+			this.radio_mp3only.TabIndex = 4;
+			this.radio_mp3only.TabStop = true;
+			this.radio_mp3only.Text = "MP3 Only";
+			this.radio_mp3only.UseVisualStyleBackColor = true;
+			this.radio_mp3only.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
 			// 
-			// downloadPath_label
+			// lbl_path
 			// 
-			this.downloadPath_label.AutoSize = true;
-			this.downloadPath_label.Location = new System.Drawing.Point(9, 255);
-			this.downloadPath_label.Name = "downloadPath_label";
-			this.downloadPath_label.Size = new System.Drawing.Size(35, 13);
-			this.downloadPath_label.TabIndex = 4;
-			this.downloadPath_label.Text = "label1";
+			this.lbl_path.AutoSize = true;
+			this.lbl_path.Location = new System.Drawing.Point(12, 282);
+			this.lbl_path.Name = "lbl_path";
+			this.lbl_path.Size = new System.Drawing.Size(35, 13);
+			this.lbl_path.TabIndex = 4;
+			this.lbl_path.Text = "label1";
 			// 
-			// btn_DownloadPath
+			// btn_selectpath
 			// 
-			this.btn_DownloadPath.Location = new System.Drawing.Point(649, 255);
-			this.btn_DownloadPath.Name = "btn_DownloadPath";
-			this.btn_DownloadPath.Size = new System.Drawing.Size(96, 23);
-			this.btn_DownloadPath.TabIndex = 5;
-			this.btn_DownloadPath.Text = "Select Path...";
-			this.btn_DownloadPath.UseVisualStyleBackColor = true;
-			this.btn_DownloadPath.Click += new System.EventHandler(this.btn_DownloadPath_Click);
+			this.btn_selectpath.Location = new System.Drawing.Point(514, 249);
+			this.btn_selectpath.Name = "btn_selectpath";
+			this.btn_selectpath.Size = new System.Drawing.Size(95, 23);
+			this.btn_selectpath.TabIndex = 5;
+			this.btn_selectpath.Text = "Select Path...";
+			this.btn_selectpath.UseVisualStyleBackColor = true;
+			this.btn_selectpath.Click += new System.EventHandler(this.btn_DownloadPath_Click);
 			// 
 			// label1
 			// 
@@ -130,27 +131,37 @@
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(82, 13);
 			this.label1.TabIndex = 6;
-			this.label1.Text = "Weespin - 2020";
+			this.label1.Text = "Weespin - 2021";
 			this.label1.DoubleClick += new System.EventHandler(this.label1_DoubleClick);
+			// 
+			// btn_opensearch
+			// 
+			this.btn_opensearch.Location = new System.Drawing.Point(615, 249);
+			this.btn_opensearch.Name = "btn_opensearch";
+			this.btn_opensearch.Size = new System.Drawing.Size(130, 23);
+			this.btn_opensearch.TabIndex = 7;
+			this.btn_opensearch.Text = "Search";
+			this.btn_opensearch.UseVisualStyleBackColor = true;
+			this.btn_opensearch.Click += new System.EventHandler(this.btn_opensearch_Click);
 			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(757, 304);
+			this.Controls.Add(this.btn_opensearch);
 			this.Controls.Add(this.label1);
-			this.Controls.Add(this.btn_DownloadPath);
-			this.Controls.Add(this.downloadPath_label);
-			this.Controls.Add(this.groupBox1);
-			this.Controls.Add(this.button1);
-			this.Controls.Add(this.textBox2);
-			this.Controls.Add(this.urllist_box);
+			this.Controls.Add(this.btn_selectpath);
+			this.Controls.Add(this.lbl_path);
+			this.Controls.Add(this.box_quality);
+			this.Controls.Add(this.btn_download);
+			this.Controls.Add(this.txt_log);
+			this.Controls.Add(this.txt_urllist);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "Form1";
 			this.Text = "KhinsiderDownloader";
-			this.Load += new System.EventHandler(this.Form1_Load);
-			this.groupBox1.ResumeLayout(false);
-			this.groupBox1.PerformLayout();
+			this.box_quality.ResumeLayout(false);
+			this.box_quality.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -158,15 +169,16 @@
 
 		#endregion
 
-		private System.Windows.Forms.TextBox urllist_box;
-		private System.Windows.Forms.TextBox textBox2;
-		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.GroupBox groupBox1;
-		private System.Windows.Forms.RadioButton radioButton2;
-		private System.Windows.Forms.RadioButton radioButton1;
-		private System.Windows.Forms.Label downloadPath_label;
-		private System.Windows.Forms.Button btn_DownloadPath;
+		private System.Windows.Forms.TextBox txt_urllist;
+		private System.Windows.Forms.TextBox txt_log;
+		private System.Windows.Forms.Button btn_download;
+		private System.Windows.Forms.GroupBox box_quality;
+		private System.Windows.Forms.RadioButton radio_betterquality;
+		private System.Windows.Forms.RadioButton radio_mp3only;
+		private System.Windows.Forms.Label lbl_path;
+		private System.Windows.Forms.Button btn_selectpath;
 		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.Button btn_opensearch;
 	}
 }
 

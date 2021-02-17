@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using AngleSharp;
-using AngleSharp.Dom;
+using HtmlAgilityPack;
 
-//./Downloads/...
 namespace KhinsiderDownloader
 {
 	public partial class Form1 : Form
@@ -22,19 +16,19 @@ namespace KhinsiderDownloader
 		{
 			InitializeComponent();
 			Program.MainForm = this;
-			downloadPath_label.Text = Downloader.sDownloadPath;
+			lbl_path.Text = Downloader.sDownloadPath;
 			LoadConfig();
 		}
 
-		public void Log(string sText)
+		public void Log(string textIn)
 		{
-			if (textBox2.InvokeRequired)
+			if (txt_log.InvokeRequired)
 			{
-				textBox2.Invoke(new Action(() =>
+				txt_log.Invoke(new Action(() =>
 				{
-					textBox2.Text += $"{sText}\r\n";
-					textBox2.SelectionStart = textBox2.Text.Length;
-					textBox2.ScrollToCaret();
+					txt_log.Text += $"{textIn}\r\n";
+					txt_log.SelectionStart = txt_log.Text.Length;
+					txt_log.ScrollToCaret();
 				}));
 			}
 		}
@@ -43,19 +37,19 @@ namespace KhinsiderDownloader
 		{
 			try
 			{
-				var lines = File.ReadAllLines("khinsiderdl.config");
-				downloadPath_label.Text = Downloader.sDownloadPath = lines[0];
+				var configLines = File.ReadAllLines("khinsiderdl.config");
+				lbl_path.Text = Downloader.sDownloadPath = configLines[0];
 
-				Downloader.eQuality = bool.Parse(lines[1])
+				Downloader.eQuality = bool.Parse(configLines[1])
 					? Downloader.EDownloadQuality.QUALITY_MP3_ONLY
 					: Downloader.EDownloadQuality.QUALITY_BEST_ONLY;
 				if (Downloader.eQuality == Downloader.EDownloadQuality.QUALITY_MP3_ONLY)
 				{
-					radioButton1.Checked = true;
+					radio_mp3only.Checked = true;
 				}
 				else
 				{
-					radioButton2.Checked = true;
+					radio_betterquality.Checked = true;
 				}
 			}
 			catch (Exception)
@@ -66,16 +60,16 @@ namespace KhinsiderDownloader
 
 		void SaveConfig()
 		{
-			string[] cfglines = new string[2];
-			cfglines[0] = Downloader.sDownloadPath;
-			cfglines[1] = (Downloader.eQuality == Downloader.EDownloadQuality.QUALITY_MP3_ONLY).ToString();
-			File.WriteAllLines("khinsiderdl.config", cfglines);
+			string[] configLines = new string[2];
+			configLines[0] = Downloader.sDownloadPath;
+			configLines[1] = (Downloader.eQuality == Downloader.EDownloadQuality.QUALITY_MP3_ONLY).ToString();
+			File.WriteAllLines("khinsiderdl.config", configLines);
 		}
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			button1.Enabled = false;
-			List<string> urls = urllist_box.Text.Split('\n').ToList();
+			btn_download.Enabled = false;
+			List<string> urls = txt_urllist.Text.Split('\n').ToList();
 			Task.Run(() =>
 			{
 				foreach (var url in urls)
@@ -84,11 +78,11 @@ namespace KhinsiderDownloader
 				}
 			}).ContinueWith((task =>
 			{
-				if (button1.InvokeRequired)
+				if (btn_download.InvokeRequired)
 				{
-					button1.Invoke(new Action(() =>
+					btn_download.Invoke(new Action(() =>
 					{
-						button1.Enabled = true;
+						btn_download.Enabled = true;
 					}));
 				}
 			}));
@@ -96,7 +90,7 @@ namespace KhinsiderDownloader
 
 		private void radioButton1_CheckedChanged(object sender, EventArgs e)
 		{
-			Downloader.eQuality = radioButton1.Checked
+			Downloader.eQuality = radio_mp3only.Checked
 				? Downloader.EDownloadQuality.QUALITY_MP3_ONLY
 				: Downloader.EDownloadQuality.QUALITY_BEST_ONLY;
 			SaveConfig();
@@ -104,13 +98,13 @@ namespace KhinsiderDownloader
 
 		private void btn_DownloadPath_Click(object sender, EventArgs e)
 		{
-			using (var fbd = new FolderBrowserDialog())
+			using (var browserDialog = new FolderBrowserDialog())
 			{
-				DialogResult result = fbd.ShowDialog();
+				DialogResult result = browserDialog.ShowDialog();
 
-				if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+				if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(browserDialog.SelectedPath))
 				{
-					downloadPath_label.Text = Downloader.sDownloadPath = fbd.SelectedPath;
+					lbl_path.Text = Downloader.sDownloadPath = browserDialog.SelectedPath;
 					SaveConfig();
 				}
 			}
@@ -121,14 +115,24 @@ namespace KhinsiderDownloader
 			System.Diagnostics.Process.Start("https://github.com/weespin");
 		}
 
-		private void Form1_Load(object sender, EventArgs e)
+
+		private void btn_opensearch_Click(object sender, EventArgs e)
 		{
+			SearchForm searchForm = new SearchForm();
+			searchForm.linkbox = txt_urllist ;
+			searchForm.Show();
 		}
 	}
 
 
 	static class Downloader
 	{
+		static WebClient webClient = new WebClient();
+
+		static Downloader()
+		{
+			webClient.Proxy = null;
+		}
 		public enum EDownloadQuality : byte
 		{
 			QUALITY_MP3_ONLY,
@@ -144,73 +148,77 @@ namespace KhinsiderDownloader
 			{
 				Directory.CreateDirectory(Downloader.sDownloadPath);
 			}
+			HtmlWeb webContext = new HtmlWeb();
+			var htmlDocument = webContext.Load(sUrl);
 
-			var context = BrowsingContext.New(Configuration.Default.WithDefaultLoader());
-			var document = context.OpenAsync(sUrl).Result;
-			if (document == null)
+			if (htmlDocument == null)
 			{
 				Program.MainForm.Log($"Failed to load {sUrl}");
 				return;
 			}
 
 			Program.MainForm.Log($"Parsing {sUrl}");
-			var songs = document.QuerySelectorAll(".playlistDownloadSong");
-			var quality = document.QuerySelectorAll("#songlist_header");
-			string albumname = "";
-			try
+			var songNodes = htmlDocument.DocumentNode.SelectNodes("//td[contains(@class, 'playlistDownloadSong')]");
+			var qualityNodes = htmlDocument.DocumentNode.SelectNodes("//tr[contains(@id, 'songlist_header')]/th");
+			var albumNameNode = htmlDocument.DocumentNode.SelectSingleNode("//*[@id=\"EchoTopic\"]/h2[1]");
+			string albumName = "error";
+			if (albumNameNode != null)
 			{
-				albumname = document.QuerySelectorAll("#EchoTopic")[0].Children[1].Text();
+				albumName = albumNameNode.InnerText;
 			}
-			catch (Exception exception)
+			else
 			{
 				Program.MainForm.Log($"Failed to parse {sUrl}");
 				return;
 			}
-
-			Directory.CreateDirectory(Downloader.sDownloadPath + "\\" + albumname);
-			var format = ".mp3";
+			Directory.CreateDirectory(Downloader.sDownloadPath + "\\" + albumName);
+			var selectedFormat = ".mp3";
 			if (eQuality != EDownloadQuality.QUALITY_MP3_ONLY)
 			{
+				List<HtmlNode> qualitySubNodes = qualityNodes.Skip(3).ToList();
 				//find non mp3 file
-				foreach (var cell in quality[0].Children.Skip(2).ToList())
+				foreach (var cell in qualitySubNodes)
 				{
-					if (cell.TextContent == "FLAC")
+					if (cell.InnerText == "FLAC")
 					{
-						format = ".flac";
+						selectedFormat = ".flac";
 						break;
 					}
 
-					if (cell.TextContent == "OGG")
+					if (cell.InnerText == "OGG")
 					{
-						format = ".ogg";
+						selectedFormat = ".ogg";
 						break;
 					}
-					if (cell.TextContent == "M4A")
+					if (cell.InnerText == "M4A")
 					{
-						format = ".m4a";
+						selectedFormat = ".m4a";
 						break;
 					}
 				}
 			}
 
+			//Thread.Sleep(1);
+
 			List<Task> currentTasks = new List<Task>();
-			songs.AsParallel().ForAll(song =>
+
+			songNodes.AsParallel().ForAll(song =>
 			{
-				var child = "https://downloads.khinsider.com" + song.Children[0].GetAttribute("href");
-				var document2 = context.OpenAsync(child).Result;
-				var dlsongs = document2.QuerySelectorAll(".songDownloadLink"); //[1].ParentElement.GetAttribute("href");
-				foreach (var dlsongentry in dlsongs)
+				var songPageURL = "https://downloads.khinsider.com" + song.ChildNodes[0].Attributes["href"].Value;
+				
+				var songPageDocument = webContext.Load(songPageURL);
+				
+				var downloadLinkNodes = songPageDocument.DocumentNode.SelectNodes("//span[@class='songDownloadLink']"); //[1].ParentElement.GetAttribute("href");
+				foreach (var dlsongentry in downloadLinkNodes)
 				{
-					var dlsong = dlsongentry.ParentElement.GetAttribute("href");
-					if (dlsong.EndsWith(format))
+					var songFileURL = dlsongentry.ParentNode.Attributes["href"].Value;
+					if (songFileURL.EndsWith(selectedFormat))
 					{
-						var name = WebUtility.UrlDecode(dlsong.Substring(dlsong.LastIndexOf("/") + 1));
-						WebClient cl = new WebClient();
-						cl.Proxy = null;
+						var name = WebUtility.UrlDecode(songFileURL.Substring(songFileURL.LastIndexOf("/") + 1));
 						Program.MainForm.Log($"Downloading {name}...");
-						Task currentTask = cl.DownloadFileTaskAsync(new Uri(dlsong),
+						Task currentTask = webClient.DownloadFileTaskAsync(new Uri(songFileURL),
 							Downloader.sDownloadPath + "\\" +
-							string.Join("_", albumname.Split(Path.GetInvalidFileNameChars())) + "\\" +
+							string.Join("_", albumName.Split(Path.GetInvalidFileNameChars())) + "\\" +
 							string.Join("_", name.Split(Path.GetInvalidFileNameChars())));
 						currentTasks.Add(currentTask);
 						currentTask.ContinueWith((
@@ -219,8 +227,7 @@ namespace KhinsiderDownloader
 				}
 			});
 			Task.WaitAll(currentTasks.ToArray());
-			Program.MainForm.Log($"Finished downloading {albumname}!");
-			//}
+			Program.MainForm.Log($"Finished downloading {albumName}!");
 		}
 	}
 }
