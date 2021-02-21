@@ -127,12 +127,6 @@ namespace KhinsiderDownloader
 
 	static class Downloader
 	{
-		static WebClient webClient = new WebClient();
-
-		static Downloader()
-		{
-			webClient.Proxy = null;
-		}
 		public enum EDownloadQuality : byte
 		{
 			QUALITY_MP3_ONLY,
@@ -214,9 +208,11 @@ namespace KhinsiderDownloader
 					var songFileURL = dlsongentry.ParentNode.Attributes["href"].Value;
 					if (songFileURL.EndsWith(selectedFormat))
 					{
+						WebClient downloadClient = new WebClient();
+						downloadClient.Proxy = null;
 						var name = WebUtility.UrlDecode(songFileURL.Substring(songFileURL.LastIndexOf("/") + 1));
 						Program.MainForm.Log($"Downloading {name}...");
-						Task currentTask = webClient.DownloadFileTaskAsync(new Uri(songFileURL),
+						Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL),
 							Downloader.sDownloadPath + "\\" +
 							string.Join("_", albumName.Split(Path.GetInvalidFileNameChars())) + "\\" +
 							string.Join("_", name.Split(Path.GetInvalidFileNameChars())));
