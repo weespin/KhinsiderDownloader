@@ -1,23 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace KhinsiderDownloader
 {
+
 	public partial class Form1 : Form
 	{
-		
+
+		class UpdateTagResult
+		{
+			public string tag_name { get; set; }
+		}
+		private void checkUpdates()
+		{
+			WebClient cl = new WebClient();
+			cl.Headers.Add("User-Agent", "KhinsiderDownloader");
+			cl.Headers.Add("Content-Type", "application/json");
+			string lastVersion = cl.DownloadString(new Uri("https://api.github.com/repos/weespin/KhinsiderDownloader/releases/latest"));
+			var result = JsonConvert.DeserializeObject<UpdateTagResult>(lastVersion);
+			Version newVersion = new Version(result.tag_name);
+			Version currentVersion = new Version(Application.ProductVersion);
+
+			if (newVersion > currentVersion)
+			{
+				var promptResult = MessageBox.Show(
+					"Download the latest version of KhinsiderDownloader!\nClick OK to open the download page",
+					"A new update has been released!", MessageBoxButtons.OKCancel);
+				if (promptResult == DialogResult.OK)
+				{
+					Process.Start("https://github.com/weespin/KhinsiderDownloader/releases");
+				}
+			}
+		}
 		public Form1()
 		{
 			InitializeComponent();
 			Program.MainForm = this;
 			lbl_path.Text = Downloader.sDownloadPath;
 			LoadConfig();
+			Task.Run(() => { checkUpdates(); });
 		}
 
 		public void Log(string textIn)
