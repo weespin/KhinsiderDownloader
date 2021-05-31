@@ -12,7 +12,7 @@ namespace KhinsiderDownloader
 {
 	public partial class SearchForm : Form
 	{
-		static string urlPrefix = "http://downloads.khinsider.com";
+		static string urlPrefix = "https://downloads.khinsider.com";
 
 		WebClient webClient;
 		public TextBox linkbox = null;
