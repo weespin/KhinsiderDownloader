@@ -5,15 +5,16 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace KhinsiderDownloader
 {
-
 	public partial class Form1 : Form
 	{
 
@@ -41,7 +42,20 @@ namespace KhinsiderDownloader
 					Process.Start("https://github.com/weespin/KhinsiderDownloader/releases");
 				}
 			}
+			else if (newVersion < currentVersion)
+			{
+				if (label1.InvokeRequired)
+				{
+					label1.Invoke(new Action(() =>
+					{
+						label1.Text = "BETA " + label1.Text;
+					}));
+
+				}
+			}
+
 		}
+
 		public Form1()
 		{
 			InitializeComponent();
@@ -49,6 +63,7 @@ namespace KhinsiderDownloader
 			lbl_path.Text = Downloader.sDownloadPath;
 			LoadConfig();
 			Task.Run(() => { checkUpdates(); });
+			num_threads.Value = 2;
 		}
 
 		public void Log(string textIn)
@@ -70,7 +85,7 @@ namespace KhinsiderDownloader
 			{
 				var configLines = File.ReadAllLines("khinsiderdl.config");
 				lbl_path.Text = Downloader.sDownloadPath = configLines[0];
-
+				
 				Downloader.eQuality = bool.Parse(configLines[1])
 					? Downloader.EDownloadQuality.QUALITY_MP3_ONLY
 					: Downloader.EDownloadQuality.QUALITY_BEST_ONLY;
@@ -82,6 +97,8 @@ namespace KhinsiderDownloader
 				{
 					radio_betterquality.Checked = true;
 				}
+
+				Downloader.g_parralelopt.MaxDegreeOfParallelism = Int32.Parse(configLines[2]);
 			}
 			catch (Exception)
 			{
@@ -91,16 +108,17 @@ namespace KhinsiderDownloader
 
 		void SaveConfig()
 		{
-			string[] configLines = new string[2];
+			string[] configLines = new string[3];
 			configLines[0] = Downloader.sDownloadPath;
 			configLines[1] = (Downloader.eQuality == Downloader.EDownloadQuality.QUALITY_MP3_ONLY).ToString();
+			configLines[2] = Downloader.g_parralelopt.MaxDegreeOfParallelism.ToString();
 			File.WriteAllLines("khinsiderdl.config", configLines);
 		}
 
 		private void button1_Click(object sender, EventArgs e)
 		{
 			btn_download.Enabled = false;
-			List<string> urls = txt_urllist.Text.Split('\n').ToList();
+			List<string> urls = txt_urllist.Text.Split(new string[] {Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList();
 			Task.Run(() =>
 			{
 				foreach (var url in urls)
@@ -153,11 +171,19 @@ namespace KhinsiderDownloader
 			searchForm.linkbox = txt_urllist ;
 			searchForm.Show();
 		}
+
+		private void num_threads_ValueChanged(object sender, EventArgs e)
+		{
+			Downloader.g_parralelopt.MaxDegreeOfParallelism = (int)num_threads.Value;
+			SaveConfig();
+		}
 	}
 
 
 	static class Downloader
 	{
+		public static ParallelOptions g_parralelopt = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+
 		public enum EDownloadQuality : byte
 		{
 			QUALITY_MP3_ONLY,
@@ -189,7 +215,8 @@ namespace KhinsiderDownloader
 			string albumName = "error";
 			if (albumNameNode != null)
 			{
-				albumName = albumNameNode.InnerText;
+				albumName = string.Join("_", albumNameNode.InnerText.Split(Path.GetInvalidFileNameChars())).Trim();
+				//albumName = albumNameNode.InnerText.Trim();
 			}
 			else
 			{
@@ -224,14 +251,47 @@ namespace KhinsiderDownloader
 			}
 
 			//Thread.Sleep(1);
-
+			
 			List<Task> currentTasks = new List<Task>();
-
-			songNodes.AsParallel().ForAll(song =>
+			ThreadPool.SetMinThreads(g_parralelopt.MaxDegreeOfParallelism, g_parralelopt.MaxDegreeOfParallelism);
+			System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
+			//foreach (var song in songNodes)
+			//{
+			Parallel.ForEach(songNodes, g_parralelopt,song=>
 			{
 				var songPageURL = "https://downloads.khinsider.com" + song.ChildNodes[0].Attributes["href"].Value;
-				
-				var songPageDocument = webContext.Load(songPageURL);
+				HtmlDocument songPageDocument = new HtmlDocument();
+				try
+				{
+					HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(songPageURL);
+					httpWebRequest.KeepAlive = false;
+					httpWebRequest.Timeout = 30 * 1000; //TCP timeout
+					using (HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse())
+					{
+						if (httpWebResponse.StatusCode == HttpStatusCode.OK)
+						{
+							using (Stream responseStream = httpWebResponse.GetResponseStream())
+							{
+								using (StreamReader reader = new StreamReader(responseStream))
+								{
+									var htmlstring = reader.ReadToEnd();
+
+									songPageDocument.LoadHtml(htmlstring);
+								}
+							}
+
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					string message = $"Failed to parse {songPageURL} ({e.Message})";
+					Program.MainForm.Log(message);
+#if DEBUG
+					Debug.WriteLine(message);
+#endif
+					return;
+				}
 				
 				var downloadLinkNodes = songPageDocument.DocumentNode.SelectNodes("//span[@class='songDownloadLink']"); //[1].ParentElement.GetAttribute("href");
 				foreach (var dlsongentry in downloadLinkNodes)
@@ -243,18 +303,35 @@ namespace KhinsiderDownloader
 						downloadClient.Proxy = null;
 						var name = WebUtility.UrlDecode(songFileURL.Substring(songFileURL.LastIndexOf("/") + 1));
 						Program.MainForm.Log($"Downloading {name}...");
-						Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL),
-							Downloader.sDownloadPath + "\\" +
-							string.Join("_", albumName.Split(Path.GetInvalidFileNameChars())) + "\\" +
-							string.Join("_", name.Split(Path.GetInvalidFileNameChars())));
+					
+						string filename = Downloader.sDownloadPath + "\\" +
+						                  albumName + "\\" +
+						                  string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
+
+						try
+						{
+						Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL), filename);
 						currentTasks.Add(currentTask);
 						currentTask.ContinueWith((
 							task => { Program.MainForm.Log($"{name} has been downloaded!"); }));
+						}
+						catch (Exception e)
+						{
+							string message = $"Failed to download {songFileURL} to {filename} ({e.Message})";
+							Program.MainForm.Log(message);
+#if DEBUG
+							Debug.WriteLine(message);
+#endif
+						}
+
 					}
 				}
+				//}// for foreach
 			});
 			Task.WaitAll(currentTasks.ToArray());
 			Program.MainForm.Log($"Finished downloading {albumName}!");
 		}
+
+		
 	}
 }

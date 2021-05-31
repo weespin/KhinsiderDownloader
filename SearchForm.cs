@@ -12,6 +12,8 @@ namespace KhinsiderDownloader
 {
 	public partial class SearchForm : Form
 	{
+		static string urlPrefix = "http://downloads.khinsider.com";
+
 		WebClient webClient;
 		public TextBox linkbox = null;
 		public SearchForm()
@@ -98,7 +100,7 @@ namespace KhinsiderDownloader
 			{
 				
 				HtmlWeb webContext = new HtmlWeb();
-				var htmlDocument = webContext.Load(searchItem.Url);
+				var htmlDocument = webContext.Load(urlPrefix+searchItem.Url);
 				var possibleCoverNode = 
 					htmlDocument.DocumentNode.SelectSingleNode("/html[1]/body[1]/table[1]/tbody[1]/tr[1]/td[1]/div[1]/div[1]/div[2]/div[2]/table[1]/tbody[1]/tr[1]/td[1]/div[1]/table[1]/tr[1]/td[1]/div[1]/a[1]");
 				if (possibleCoverNode != null)
@@ -155,7 +157,7 @@ namespace KhinsiderDownloader
 				return;
 			}
 			SearchItem currentItem = (SearchItem)list_result.SelectedItem;
-			linkbox.Text += currentItem.Url + Environment.NewLine;
+			linkbox.Text += urlPrefix + currentItem.Url + Environment.NewLine;
 		}
 
 		private void btn_add_all_Click(object sender, EventArgs e)
@@ -163,7 +165,7 @@ namespace KhinsiderDownloader
 			foreach (var item in list_result.Items)
 			{
 				SearchItem currentItem = (SearchItem)item;
-				linkbox.Text += currentItem.Url + Environment.NewLine;
+				linkbox.Text += urlPrefix + currentItem.Url + Environment.NewLine;
 			}
 		}
 	}

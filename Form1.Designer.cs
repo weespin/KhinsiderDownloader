@@ -39,7 +39,10 @@
 			this.btn_selectpath = new System.Windows.Forms.Button();
 			this.label1 = new System.Windows.Forms.Label();
 			this.btn_opensearch = new System.Windows.Forms.Button();
+			this.num_threads = new System.Windows.Forms.NumericUpDown();
+			this.label2 = new System.Windows.Forms.Label();
 			this.box_quality.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.num_threads)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// txt_urllist
@@ -144,11 +147,45 @@
 			this.btn_opensearch.UseVisualStyleBackColor = true;
 			this.btn_opensearch.Click += new System.EventHandler(this.btn_opensearch_Click);
 			// 
+			// num_threads
+			// 
+			this.num_threads.Location = new System.Drawing.Point(449, 252);
+			this.num_threads.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+			this.num_threads.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.num_threads.Name = "num_threads";
+			this.num_threads.Size = new System.Drawing.Size(59, 20);
+			this.num_threads.TabIndex = 8;
+			this.num_threads.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.num_threads.ValueChanged += new System.EventHandler(this.num_threads_ValueChanged);
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Location = new System.Drawing.Point(394, 254);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(49, 13);
+			this.label2.TabIndex = 9;
+			this.label2.Text = "Threads:";
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(757, 304);
+			this.Controls.Add(this.label2);
+			this.Controls.Add(this.num_threads);
 			this.Controls.Add(this.btn_opensearch);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.btn_selectpath);
@@ -162,6 +199,7 @@
 			this.Text = "KhinsiderDownloader";
 			this.box_quality.ResumeLayout(false);
 			this.box_quality.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.num_threads)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -179,6 +217,8 @@
 		private System.Windows.Forms.Button btn_selectpath;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Button btn_opensearch;
+		private System.Windows.Forms.NumericUpDown num_threads;
+		private System.Windows.Forms.Label label2;
 	}
 }
 
