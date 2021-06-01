@@ -241,7 +241,7 @@ namespace KhinsiderDownloader
 			string albumName = "error";
 			if (albumNameNode != null)
 			{
-				albumName = string.Join("_", albumNameNode.InnerText.Split(Path.GetInvalidFileNameChars())).Trim();
+				albumName = string.Join("_", albumNameNode.InnerText.Split(Path.GetInvalidFileNameChars())).Trim(new char[]{' ','.'});
 				//albumName = albumNameNode.InnerText.Trim();
 			}
 			else
@@ -281,10 +281,11 @@ namespace KhinsiderDownloader
 			List<Task> currentTasks = new List<Task>();
 			ThreadPool.SetMinThreads(g_parralelopt.MaxDegreeOfParallelism, g_parralelopt.MaxDegreeOfParallelism);
 			System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-			//foreach (var song in songNodes)
-			//{
+		
 			int tasknum = songNodes.Count;
 			int currentnum = 0;
+			//foreach (var song in songNodes)
+			//{
 			Parallel.ForEach(songNodes, g_parralelopt,song=>
 			{
 				var songPageURL = "https://downloads.khinsider.com" + song.ChildNodes[0].Attributes["href"].Value;
@@ -335,7 +336,6 @@ namespace KhinsiderDownloader
 						string filename = Downloader.sDownloadPath + "\\" +
 						                  albumName + "\\" +
 						                  string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
-
 						try
 						{
 						Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL), filename);
@@ -352,9 +352,9 @@ namespace KhinsiderDownloader
 						{
 							string message = $"Failed to download {songFileURL} to {filename} ({e.Message})";
 							Program.MainForm.Log(message);
-#if DEBUG
+#if DEBUG				
 							Debug.WriteLine(message);
-#endif
+#endif					
 						}
 
 					}
