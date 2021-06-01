@@ -361,17 +361,8 @@ namespace KhinsiderDownloader
 				}
 				//}// for foreach
 			});
-			Task.WaitAll(currentTasks.ToArray(), cancelTokenSource.Token);
-			if (cancelTokenSource.IsCancellationRequested)
-			{
-				Program.MainForm.Log($"Download was cancelled!");
-			
-			}
-			else
-			{
-				Program.MainForm.Log($"Finished downloading {albumName}!");
-
-			}
+			Task.WaitAll(currentTasks.ToArray());
+			Program.MainForm.Log($"Finished downloading {albumName}!");
 
 			ResetTitle();
 		}
