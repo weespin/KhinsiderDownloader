@@ -218,11 +218,9 @@ namespace KhinsiderDownloader
 
 		public static EDownloadQuality eQuality = EDownloadQuality.QUALITY_MP3_ONLY;
 		public static string sDownloadPath = Directory.GetCurrentDirectory() + "\\Downloads\\";
-		public static CancellationTokenSource cancelTokenSource;
-
+	
 		public static void DownloadAlbum(string sUrl)
 		{
-			cancelTokenSource = new CancellationTokenSource();
 			if (!Directory.Exists(Downloader.sDownloadPath))
 			{
 				Directory.CreateDirectory(Downloader.sDownloadPath);
