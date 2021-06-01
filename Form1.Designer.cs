@@ -50,6 +50,7 @@
 			this.txt_urllist.Location = new System.Drawing.Point(3, 12);
 			this.txt_urllist.Multiline = true;
 			this.txt_urllist.Name = "txt_urllist";
+			this.txt_urllist.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
 			this.txt_urllist.Size = new System.Drawing.Size(752, 127);
 			this.txt_urllist.TabIndex = 0;
 			// 
