@@ -62,10 +62,10 @@ namespace KhinsiderDownloader
 		{
 			InitializeComponent();
 			Program.MainForm = this;
+			LoadConfig();
 			lbl_path.Text = Downloader.sDownloadPath;
 			Downloader.g_parralelopt.MaxDegreeOfParallelism = 2;
 			num_threads.Value = 2;
-			LoadConfig();
 			Task.Run(() => { checkUpdates(); });
 		}
 
