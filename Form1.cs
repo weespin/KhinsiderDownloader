@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,8 @@ namespace KhinsiderDownloader
 {
 	public partial class Form1 : Form
 	{
-
+		
+		public static string programName = "KhinsiderDownloader";
 		class UpdateTagResult
 		{
 			public string tag_name { get; set; }
@@ -48,7 +50,7 @@ namespace KhinsiderDownloader
 				{
 					label1.Invoke(new Action(() =>
 					{
-						label1.Text = "BETA " + label1.Text;
+						label1.Text = "DEV " + label1.Text;
 					}));
 
 				}
@@ -61,9 +63,10 @@ namespace KhinsiderDownloader
 			InitializeComponent();
 			Program.MainForm = this;
 			lbl_path.Text = Downloader.sDownloadPath;
+			Downloader.g_parralelopt.MaxDegreeOfParallelism = 2;
+			num_threads.Value = 2;
 			LoadConfig();
 			Task.Run(() => { checkUpdates(); });
-			num_threads.Value = 2;
 		}
 
 		public void Log(string textIn)
@@ -118,6 +121,9 @@ namespace KhinsiderDownloader
 		private void button1_Click(object sender, EventArgs e)
 		{
 			btn_download.Enabled = false;
+			radio_betterquality.Enabled = false;
+			radio_mp3only.Enabled = false;
+			btn_selectpath.Enabled = false;
 			List<string> urls = txt_urllist.Text.Split(new string[] {Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList();
 			Task.Run(() =>
 			{
@@ -132,6 +138,10 @@ namespace KhinsiderDownloader
 					btn_download.Invoke(new Action(() =>
 					{
 						btn_download.Enabled = true;
+						radio_betterquality.Enabled = true;
+						radio_mp3only.Enabled = true;
+						btn_selectpath.Enabled = true;
+
 					}));
 				}
 			}));
@@ -182,8 +192,24 @@ namespace KhinsiderDownloader
 
 	static class Downloader
 	{
-		public static ParallelOptions g_parralelopt = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+		public static ParallelOptions g_parralelopt = new ParallelOptions()
+			{MaxDegreeOfParallelism = Environment.ProcessorCount};
+		static void UpdateTitle(int value,int max)
+		{
+			Program.MainForm.Invoke(new Action(() =>
+			{
+				Program.MainForm.Text = $"{Form1.programName} ({value}/{max})";
+			}));
+		
+		}
 
+		static void ResetTitle()
+		{
+			Program.MainForm.Invoke(new Action(() =>
+			{
+				Program.MainForm.Text = $"{Form1.programName}";
+			}));
+		}
 		public enum EDownloadQuality : byte
 		{
 			QUALITY_MP3_ONLY,
@@ -192,9 +218,11 @@ namespace KhinsiderDownloader
 
 		public static EDownloadQuality eQuality = EDownloadQuality.QUALITY_MP3_ONLY;
 		public static string sDownloadPath = Directory.GetCurrentDirectory() + "\\Downloads\\";
+		public static CancellationTokenSource cancelTokenSource;
 
 		public static void DownloadAlbum(string sUrl)
 		{
+			cancelTokenSource = new CancellationTokenSource();
 			if (!Directory.Exists(Downloader.sDownloadPath))
 			{
 				Directory.CreateDirectory(Downloader.sDownloadPath);
@@ -257,6 +285,8 @@ namespace KhinsiderDownloader
 			System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
 			//foreach (var song in songNodes)
 			//{
+			int tasknum = songNodes.Count;
+			int currentnum = 0;
 			Parallel.ForEach(songNodes, g_parralelopt,song=>
 			{
 				var songPageURL = "https://downloads.khinsider.com" + song.ChildNodes[0].Attributes["href"].Value;
@@ -313,7 +343,12 @@ namespace KhinsiderDownloader
 						Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL), filename);
 						currentTasks.Add(currentTask);
 						currentTask.ContinueWith((
-							task => { Program.MainForm.Log($"{name} has been downloaded!"); }));
+							task =>
+							{
+								++currentnum;
+								UpdateTitle(currentnum, tasknum);
+								Program.MainForm.Log($"{name} has been downloaded!");
+							}));
 						}
 						catch (Exception e)
 						{
@@ -328,8 +363,19 @@ namespace KhinsiderDownloader
 				}
 				//}// for foreach
 			});
-			Task.WaitAll(currentTasks.ToArray());
-			Program.MainForm.Log($"Finished downloading {albumName}!");
+			Task.WaitAll(currentTasks.ToArray(), cancelTokenSource.Token);
+			if (cancelTokenSource.IsCancellationRequested)
+			{
+				Program.MainForm.Log($"Download was cancelled!");
+			
+			}
+			else
+			{
+				Program.MainForm.Log($"Finished downloading {albumName}!");
+
+			}
+
+			ResetTitle();
 		}
 
 		

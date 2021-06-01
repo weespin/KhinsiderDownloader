@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using HtmlAgilityPack;
+using KhinsiderDownloader.Properties;
 
 
 namespace KhinsiderDownloader
@@ -20,6 +21,7 @@ namespace KhinsiderDownloader
 		{
 			InitializeComponent();
 			webClient = new WebClient();
+			pic_album.Image = Resources.no_image;
 		}
 
 
@@ -124,8 +126,16 @@ namespace KhinsiderDownloader
 		void ShowImage(Bitmap bitmap)
 		{
 
-			pic_album.Invoke(new Action(() => { pic_album.Image = bitmap; }));
-			lbl_noimage.Invoke(new Action(() => { lbl_noimage.Visible = bitmap == null; }));
+			if (bitmap == null)
+			{
+				pic_album.Invoke(new Action(() => { pic_album.Image = Properties.Resources.no_image; }));
+			}
+			else
+			{
+				pic_album.Invoke(new Action(() => { pic_album.Image = bitmap; }));
+
+			}
+			//lbl_noimage.Invoke(new Action(() => { lbl_noimage.Visible = bitmap == null; }));
 
 		}
 		private void list_result_SelectedIndexChanged(object sender, EventArgs e)
@@ -167,6 +177,16 @@ namespace KhinsiderDownloader
 				SearchItem currentItem = (SearchItem)item;
 				linkbox.Text += urlPrefix + currentItem.Url + Environment.NewLine;
 			}
+		}
+
+		private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+		{
+
+		}
+
+		private void SearchForm_Resize(object sender, EventArgs e)
+		{
+			
 		}
 	}
 }

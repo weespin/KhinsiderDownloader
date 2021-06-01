@@ -60,6 +60,7 @@
 			this.txt_log.Multiline = true;
 			this.txt_log.Name = "txt_log";
 			this.txt_log.ReadOnly = true;
+			this.txt_log.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
 			this.txt_log.Size = new System.Drawing.Size(600, 98);
 			this.txt_log.TabIndex = 1;
 			// 
