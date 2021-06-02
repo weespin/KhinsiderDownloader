@@ -41,8 +41,12 @@
 			this.btn_opensearch = new System.Windows.Forms.Button();
 			this.num_threads = new System.Windows.Forms.NumericUpDown();
 			this.label2 = new System.Windows.Forms.Label();
+			this.label3 = new System.Windows.Forms.Label();
+			this.num_album_threads = new System.Windows.Forms.NumericUpDown();
+			this.chk_suppress_downloading_logs = new System.Windows.Forms.CheckBox();
 			this.box_quality.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.num_threads)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.num_album_threads)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// txt_urllist
@@ -151,7 +155,7 @@
 			// 
 			// num_threads
 			// 
-			this.num_threads.Location = new System.Drawing.Point(449, 252);
+			this.num_threads.Location = new System.Drawing.Point(449, 249);
 			this.num_threads.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -175,17 +179,63 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(394, 254);
+			this.label2.Location = new System.Drawing.Point(394, 251);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(49, 13);
 			this.label2.TabIndex = 9;
 			this.label2.Text = "Threads:";
+			// 
+			// label3
+			// 
+			this.label3.AutoSize = true;
+			this.label3.Location = new System.Drawing.Point(242, 251);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(81, 13);
+			this.label3.TabIndex = 11;
+			this.label3.Text = "Album Threads:";
+			// 
+			// num_album_threads
+			// 
+			this.num_album_threads.Location = new System.Drawing.Point(329, 249);
+			this.num_album_threads.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+			this.num_album_threads.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.num_album_threads.Name = "num_album_threads";
+			this.num_album_threads.Size = new System.Drawing.Size(59, 20);
+			this.num_album_threads.TabIndex = 10;
+			this.num_album_threads.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.num_album_threads.ValueChanged += new System.EventHandler(this.num_album_threads_ValueChanged);
+			// 
+			// chk_suppress_downloading_logs
+			// 
+			this.chk_suppress_downloading_logs.AutoSize = true;
+			this.chk_suppress_downloading_logs.Location = new System.Drawing.Point(140, 249);
+			this.chk_suppress_downloading_logs.Name = "chk_suppress_downloading_logs";
+			this.chk_suppress_downloading_logs.Size = new System.Drawing.Size(96, 17);
+			this.chk_suppress_downloading_logs.TabIndex = 12;
+			this.chk_suppress_downloading_logs.Text = "Suppress Logs";
+			this.chk_suppress_downloading_logs.UseVisualStyleBackColor = true;
+			this.chk_suppress_downloading_logs.CheckedChanged += new System.EventHandler(this.chk_suppress_downloading_logs_CheckedChanged);
 			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(757, 304);
+			this.Controls.Add(this.chk_suppress_downloading_logs);
+			this.Controls.Add(this.label3);
+			this.Controls.Add(this.num_album_threads);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this.num_threads);
 			this.Controls.Add(this.btn_opensearch);
@@ -202,6 +252,7 @@
 			this.box_quality.ResumeLayout(false);
 			this.box_quality.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.num_threads)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.num_album_threads)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -221,6 +272,9 @@
 		private System.Windows.Forms.Button btn_opensearch;
 		private System.Windows.Forms.NumericUpDown num_threads;
 		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.Label label3;
+		private System.Windows.Forms.NumericUpDown num_album_threads;
+		private System.Windows.Forms.CheckBox chk_suppress_downloading_logs;
 	}
 }
 
