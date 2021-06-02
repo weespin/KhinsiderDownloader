@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Resources;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -218,6 +219,9 @@ namespace KhinsiderDownloader
 		//ParralelOptions for albums
 		public static ParallelOptions g_albumsParralelOptions = new ParallelOptions()
 			{ MaxDegreeOfParallelism = Environment.ProcessorCount };
+		public static int nTotalAlbums = 0;
+		public static int nAlbumsDownloaded = 0;
+
 		static void UpdateTitle(int value,int max)
 		{
 			Program.MainForm.Invoke(new Action(() =>
@@ -246,13 +250,21 @@ namespace KhinsiderDownloader
 
 		public static void DownloadAlbums(List<string> url)
 		{
+
 			if (!Directory.Exists(Downloader.m_szDownloadPath))
 			{
 				Directory.CreateDirectory(Downloader.m_szDownloadPath);
 			}
 			ThreadPool.SetMinThreads(g_songsParralelOptions.MaxDegreeOfParallelism, g_songsParralelOptions.MaxDegreeOfParallelism);
 			System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
+			nAlbumsDownloaded = 0;
+			nTotalAlbums = url.Count;
+			if (g_albumsParralelOptions.MaxDegreeOfParallelism != 1)
+			{
+				UpdateTitle(nAlbumsDownloaded, nTotalAlbums);
+			}
 			Parallel.ForEach(url,g_albumsParralelOptions, DownloadAlbum);
+			ResetTitle();
 		}
 
 		public static string GetHTMLFromURL(string sUrl)
@@ -353,7 +365,7 @@ namespace KhinsiderDownloader
 					return;
 				}
 				var downloadLinkNodes = songPageDocument.DocumentNode.SelectNodes("//span[@class='songDownloadLink']"); //[1].ParentElement.GetAttribute("href");
-				//Do not use Parallel.ForEach.Foreach we usually have ~2 nodes
+				//Do not use Parallel.ForEach as we usually have ~2 nodes
 				int nDownloadNodes = downloadLinkNodes.Count;
 				for (var index = 0; index < nDownloadNodes; index++)
 				{
@@ -404,7 +416,10 @@ namespace KhinsiderDownloader
 			});
 			Task.WaitAll(currentTasks.ToArray());
 			Program.MainForm.Log($"Finished downloading {szAlbumName}!");
-			ResetTitle();
+			if (g_albumsParralelOptions.MaxDegreeOfParallelism != 1)
+			{
+				UpdateTitle(++nAlbumsDownloaded, nTotalAlbums);
+			}
 		}
 	}
 }

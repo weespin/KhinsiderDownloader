@@ -179,16 +179,16 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(394, 251);
+			this.label2.Location = new System.Drawing.Point(344, 251);
 			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(49, 13);
+			this.label2.Size = new System.Drawing.Size(99, 13);
 			this.label2.TabIndex = 9;
-			this.label2.Text = "Threads:";
+			this.label2.Text = "Threads per Album:";
 			// 
 			// label3
 			// 
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(242, 251);
+			this.label3.Location = new System.Drawing.Point(192, 251);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(81, 13);
 			this.label3.TabIndex = 11;
@@ -196,7 +196,7 @@
 			// 
 			// num_album_threads
 			// 
-			this.num_album_threads.Location = new System.Drawing.Point(329, 249);
+			this.num_album_threads.Location = new System.Drawing.Point(279, 249);
 			this.num_album_threads.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -220,7 +220,7 @@
 			// chk_suppress_downloading_logs
 			// 
 			this.chk_suppress_downloading_logs.AutoSize = true;
-			this.chk_suppress_downloading_logs.Location = new System.Drawing.Point(140, 249);
+			this.chk_suppress_downloading_logs.Location = new System.Drawing.Point(12, 250);
 			this.chk_suppress_downloading_logs.Name = "chk_suppress_downloading_logs";
 			this.chk_suppress_downloading_logs.Size = new System.Drawing.Size(96, 17);
 			this.chk_suppress_downloading_logs.TabIndex = 12;
