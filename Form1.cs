@@ -10,10 +10,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using HtmlAgilityPack;
+using AngleSharp;
+using AngleSharp.Dom;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace KhinsiderDownloader
 {
@@ -255,7 +256,9 @@ namespace KhinsiderDownloader
 			{
 				Directory.CreateDirectory(Downloader.m_szDownloadPath);
 			}
-			ThreadPool.SetMinThreads(g_songsParralelOptions.MaxDegreeOfParallelism, g_songsParralelOptions.MaxDegreeOfParallelism);
+
+			var maxthreads = g_songsParralelOptions.MaxDegreeOfParallelism * g_albumsParralelOptions.MaxDegreeOfParallelism;
+			ThreadPool.SetMinThreads(maxthreads, maxthreads);
 			System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
 			nAlbumsDownloaded = 0;
 			nTotalAlbums = url.Count;
@@ -293,24 +296,32 @@ namespace KhinsiderDownloader
 		}
 		public static void DownloadAlbum(string sUrl)
 		{
-			
-			string albumHTML = GetHTMLFromURL(sUrl);
-			if (albumHTML == string.Empty)
+			string albumHTML = String.Empty;
+			try
 			{
-				return;
+				albumHTML = GetHTMLFromURL(sUrl);
+			}
+			catch (Exception e)
+			{
+				string errorMessage = $"Failed to open {sUrl} ({e.Message})";
+				Program.MainForm.Log(errorMessage);
+#if DEBUG
+				Debug.WriteLine(errorMessage);
+#endif
 			}
 
-			HtmlDocument albumHtmlDocument = new HtmlDocument();
-			albumHtmlDocument.LoadHtml(albumHTML);
+
+			var parser = new HtmlParser();
+			var albumHtmlDocument = parser.ParseDocument(albumHTML);
 			Program.MainForm.Log($"Parsing {sUrl}");
-			var songNodes = albumHtmlDocument.DocumentNode.SelectNodes("//td[contains(@class, 'playlistDownloadSong')]");
-			var qualityNodes = albumHtmlDocument.DocumentNode.SelectNodes("//tr[contains(@id, 'songlist_header')]/th");
-			var albumNameNode = albumHtmlDocument.DocumentNode.SelectSingleNode("//*[@id=\"EchoTopic\"]/h2[1]");
+			var songNodes = albumHtmlDocument.All.Where(element =>element.LocalName == "td" && element.ClassName == "playlistDownloadSong");//.SelectNodes("//td[contains(@class, 'playlistDownloadSong')]");
+			var qualityNodes = albumHtmlDocument.All.Where(element =>element.LocalName == "tr" && element.Id == "songlist_header"); //DocumentNode.SelectNodes("//tr[contains(@id, 'songlist_header')]/th");
+			var albumNameNode = albumHtmlDocument.All.FirstOrDefault(element => element.LocalName == "div" && element.Id == "EchoTopic")?.Children[1];  //DocumentNode.SelectSingleNode("//*[@id=\"EchoTopic\"]/h2[1]");
 			string szAlbumName;
-			if (albumNameNode != null)
+			if (albumNameNode != null && songNodes.Any() && qualityNodes.Any())
 			{
 				//Trim spaces and dots!
-				szAlbumName = string.Join("_", WebUtility.HtmlDecode(albumNameNode.InnerText).Split(Path.GetInvalidFileNameChars())).Trim(new char[]{' ','.'});
+				szAlbumName = string.Join("_", WebUtility.HtmlDecode(albumNameNode.InnerHtml).Split(Path.GetInvalidFileNameChars())).Trim(new char[]{' ','.'});
 			}
 			else
 			{
@@ -322,22 +333,22 @@ namespace KhinsiderDownloader
 			var selectedFormat = ".mp3";
 			if (eQuality != EDownloadQuality.QUALITY_MP3_ONLY)
 			{
-				List<HtmlNode> qualitySubNodes = qualityNodes.Skip(3).ToList();
+				List<IElement> qualitySubNodes = qualityNodes.Skip(3).ToList();
 				//find non mp3 file
 				foreach (var cell in qualitySubNodes)
 				{
-					if (cell.InnerText == "FLAC")
+					if (cell.InnerHtml == "FLAC")
 					{
 						selectedFormat = ".flac";
 						break;
 					}
-
-					if (cell.InnerText == "OGG")
+			
+					if (cell.InnerHtml == "OGG")
 					{
 						selectedFormat = ".ogg";
 						break;
 					}
-					if (cell.InnerText == "M4A")
+					if (cell.InnerHtml == "M4A")
 					{
 						selectedFormat = ".m4a";
 						break;
@@ -345,72 +356,86 @@ namespace KhinsiderDownloader
 				}
 			}
 			List<Task> currentTasks = new List<Task>();
-			int nTotalSongs = songNodes.Count;
+			int nTotalSongs = songNodes.Count();
 			int nCurrentSong = 0;
-			
+
 			Parallel.ForEach(songNodes, g_songsParralelOptions,song=>
 			{
-				var songPageURL = "https://downloads.khinsider.com" + song.ChildNodes[0].Attributes["href"].Value;
-				HtmlDocument songPageDocument = new HtmlDocument();
+				var songPageURL =
+					"https://downloads.khinsider.com" + song.Children[0].GetAttribute("href"); //["href"].Value;
+
+				IHtmlDocument songPageDocument;
+
 				try
 				{
-					songPageDocument.LoadHtml(GetHTMLFromURL(songPageURL));
+					if (g_songsParralelOptions.MaxDegreeOfParallelism == 1)
+					{
+						songPageDocument = new HtmlParser().ParseDocument(GetHTMLFromURL(songPageURL));
+					}
+					else
+					{
+						songPageDocument = parser.ParseDocument(GetHTMLFromURL(songPageURL)); 
+					}
 				}
 				catch (Exception e)
 				{
 					string message = $"Failed to parse {songPageURL} ({e.Message})";
 					Program.MainForm.Log(message);
-#if DEBUG
+#if DEBUG       
 					Debug.WriteLine(message);
-#endif
+#endif          
 					return;
 				}
-				var downloadLinkNodes = songPageDocument.DocumentNode.SelectNodes("//span[@class='songDownloadLink']"); //[1].ParentElement.GetAttribute("href");
+
+				var downloadLinkNodes =
+					songPageDocument.All.Where(element=>element.ClassName == "songDownloadLink").ToList(); //"//span[@class='songDownloadLink']"); //[1].ParentElement.GetAttribute("href");
 				//Do not use Parallel.ForEach as we usually have ~2 nodes
-				int nDownloadNodes = downloadLinkNodes.Count;
+				int nDownloadNodes = downloadLinkNodes.Count();
 				for (var index = 0; index < nDownloadNodes; index++)
 				{
 					var dlsongentry = downloadLinkNodes[index];
-					var songFileURL = dlsongentry.ParentNode.Attributes["href"].Value;
+					var songFileURL = dlsongentry.ParentElement.GetAttribute("href"); //.Value;
 					if (songFileURL.EndsWith(selectedFormat))
 					{
-						var name = WebUtility.HtmlDecode(songFileURL.Substring(songFileURL.LastIndexOf("/", StringComparison.Ordinal) + 1));
+						var name = WebUtility.HtmlDecode(
+							songFileURL.Substring(songFileURL.LastIndexOf("/", StringComparison.Ordinal) + 1));
 						if (!m_bSuppessLogs)
 						{
 							Program.MainForm.Log($"Downloading {name}...");
 						}
+					
 						string filename = m_szDownloadPath + "\\" + szAlbumName + "\\" + string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
 						try
 						{
-
+					
 							WebClient downloadClient = new WebClient();
-								downloadClient.Proxy = null;
-								Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL), filename);
-								currentTasks.Add(currentTask);
-								currentTask.ContinueWith(
-									task =>
+							downloadClient.Proxy = null;
+							Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL), filename);
+							currentTasks.Add(currentTask);
+							currentTask.ContinueWith(
+								task =>
+								{
+									downloadClient.Dispose();
+									++nCurrentSong;
+									if (g_albumsParralelOptions.MaxDegreeOfParallelism == 1)
 									{
-										downloadClient.Dispose();  
-										++nCurrentSong;
-										if (g_albumsParralelOptions.MaxDegreeOfParallelism == 1)
-										{
-											UpdateTitle(nCurrentSong, nTotalSongs);
-										}
-
-										if (!m_bSuppessLogs)
-										{
-											Program.MainForm.Log($"{name} has been downloaded!");
-										}
-									});
-							
+										UpdateTitle(nCurrentSong, nTotalSongs);
+									}
+					
+									if (!m_bSuppessLogs)
+									{
+										Program.MainForm.Log($"{name} has been downloaded!");
+									}
+								});
+					
 						}
 						catch (Exception e)
 						{
 							string errorMessage = $"Failed to download {songFileURL} to {filename} ({e.Message})";
 							Program.MainForm.Log(errorMessage);
-#if DEBUG
+#if DEBUG 
 							Debug.WriteLine(errorMessage);
-#endif
+#endif 
 						}
 					}
 				}
