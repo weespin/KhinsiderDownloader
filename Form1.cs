@@ -310,13 +310,14 @@ namespace KhinsiderDownloader
 			if (albumNameNode != null)
 			{
 				//Trim spaces and dots!
-				szAlbumName = string.Join("_", albumNameNode.InnerText.Split(Path.GetInvalidPathChars())).Trim(new char[]{' ','.'});
+				szAlbumName = string.Join("_", WebUtility.HtmlDecode(albumNameNode.InnerText).Split(Path.GetInvalidFileNameChars())).Trim(new char[]{' ','.'});
 			}
 			else
 			{
 				Program.MainForm.Log($"Failed to parse {sUrl}");
 				return;
 			}
+			
 			Directory.CreateDirectory(Downloader.m_szDownloadPath + "\\" + szAlbumName);
 			var selectedFormat = ".mp3";
 			if (eQuality != EDownloadQuality.QUALITY_MP3_ONLY)
@@ -373,7 +374,7 @@ namespace KhinsiderDownloader
 					var songFileURL = dlsongentry.ParentNode.Attributes["href"].Value;
 					if (songFileURL.EndsWith(selectedFormat))
 					{
-						var name = WebUtility.UrlDecode(songFileURL.Substring(songFileURL.LastIndexOf("/", StringComparison.Ordinal) + 1));
+						var name = WebUtility.HtmlDecode(songFileURL.Substring(songFileURL.LastIndexOf("/", StringComparison.Ordinal) + 1));
 						if (!m_bSuppessLogs)
 						{
 							Program.MainForm.Log($"Downloading {name}...");
