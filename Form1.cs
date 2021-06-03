@@ -270,8 +270,14 @@ namespace KhinsiderDownloader
 			ResetTitle();
 		}
 
-		public static string GetHTMLFromURL(string sUrl)
+		public struct HTMLResult
 		{
+			public string ResponseURI;
+			public string HTML;
+		}
+		public static HTMLResult GetHTMLFromURL(string sUrl)
+		{
+			HTMLResult result = new HTMLResult();
 			HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(sUrl);
 			httpWebRequest.Proxy = null;
 			httpWebRequest.KeepAlive = false;
@@ -280,26 +286,28 @@ namespace KhinsiderDownloader
 			{
 				if (httpWebResponse.StatusCode == HttpStatusCode.OK)
 				{
+					result.ResponseURI = httpWebResponse.ResponseUri.ToString();
+
 					using (Stream responseStream = httpWebResponse.GetResponseStream())
 					{
 						if (responseStream != null)
 						{
 							using (StreamReader reader = new StreamReader(responseStream))
 							{
-								return reader.ReadToEnd();
+								result.HTML = reader.ReadToEnd();
 							}
 						}
 					}
 				}
 			}
-			return string.Empty;
+			return result;
 		}
 		public static void DownloadAlbum(string sUrl)
 		{
 			string albumHTML = String.Empty;
 			try
 			{
-				albumHTML = GetHTMLFromURL(sUrl);
+				albumHTML = GetHTMLFromURL(sUrl).HTML;
 			}
 			catch (Exception e)
 			{
@@ -370,11 +378,11 @@ namespace KhinsiderDownloader
 				{
 					if (g_songsParralelOptions.MaxDegreeOfParallelism == 1)
 					{
-						songPageDocument = new HtmlParser().ParseDocument(GetHTMLFromURL(songPageURL));
+						songPageDocument = new HtmlParser().ParseDocument(GetHTMLFromURL(songPageURL).HTML);
 					}
 					else
 					{
-						songPageDocument = parser.ParseDocument(GetHTMLFromURL(songPageURL)); 
+						songPageDocument = parser.ParseDocument(GetHTMLFromURL(songPageURL).HTML); 
 					}
 				}
 				catch (Exception e)

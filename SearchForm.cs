@@ -17,22 +17,6 @@ namespace KhinsiderDownloader
 	{
 		static string urlPrefix = "https://downloads.khinsider.com";
 
-		string GetRedirectURL(string URL)
-		{
-			HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(URL);
-			httpWebRequest.Proxy = null;
-			httpWebRequest.KeepAlive = false;
-			httpWebRequest.Timeout = 30 * 1000; //TCP timeout
-			using (HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse())
-			{
-				if (httpWebResponse.StatusCode == HttpStatusCode.OK)
-				{
-					return httpWebResponse.ResponseUri.ToString();
-				}
-			}
-
-			return "";
-		}
 		WebClient webClient;
 		public TextBox linkbox = null;
 		public SearchForm()
@@ -62,7 +46,8 @@ namespace KhinsiderDownloader
 			List<SearchItem> searchResult = new List<SearchItem>();
 			var parser = new HtmlParser();
 			var endpointURL = "https://downloads.khinsider.com/search?search=" + query;
-			var htmlDocument = parser.ParseDocument(Downloader.GetHTMLFromURL(endpointURL));
+			Downloader.HTMLResult downloadHtmlResult = Downloader.GetHTMLFromURL(endpointURL);
+			var htmlDocument = parser.ParseDocument(downloadHtmlResult.HTML);
 			//Get Album name
 			var albumNameNode = htmlDocument.All.FirstOrDefault(element => element.LocalName == "div" && element.Id == "EchoTopic");
 			if (albumNameNode == null)
@@ -74,7 +59,7 @@ namespace KhinsiderDownloader
 			{
 				SearchItem searchItem = new SearchItem();
 				searchItem.Name = albumNameNode.Children[1].InnerHtml;
-				searchItem.Url = GetRedirectURL(endpointURL);
+				searchItem.Url = downloadHtmlResult.ResponseURI;
 				searchResult.Add(searchItem);
 				this.Invoke(new Action(() => { this.Cursor = Cursors.Default; }));
 				return searchResult;
@@ -126,7 +111,7 @@ namespace KhinsiderDownloader
 
 				var parser = new HtmlParser();
 
-				var htmlDocument = parser.ParseDocument(Downloader.GetHTMLFromURL(urlPrefix + searchItem.Url));
+				var htmlDocument = parser.ParseDocument(Downloader.GetHTMLFromURL(urlPrefix + searchItem.Url).HTML);
 				var albumNameNode = htmlDocument.All.FirstOrDefault(element => element.LocalName == "div" && element.Id == "EchoTopic");
 				var imagenode = albumNameNode.Children[4].QuerySelector("img");
 				if (imagenode != null)
