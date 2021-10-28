@@ -340,9 +340,10 @@ namespace KhinsiderDownloader
 			{
 				string errorMessage = $"Failed to open {sUrl} ({e.Message})";
 				Program.MainForm.Log(errorMessage);
-#if DEBUG
+#if DEBUG	
 				Debug.WriteLine(errorMessage);
 #endif
+				return; 
 			}
 
 
@@ -350,10 +351,10 @@ namespace KhinsiderDownloader
 			var albumHtmlDocument = parser.ParseDocument(albumHTML);
 			Program.MainForm.Log($"Parsing {sUrl}");
 			var songNodes = albumHtmlDocument.All.Where(element =>element.LocalName == "td" && element.ClassName == "playlistDownloadSong");//.SelectNodes("//td[contains(@class, 'playlistDownloadSong')]");
-			var qualityNodes = albumHtmlDocument.All.Where(element =>element.LocalName == "tr" && element.Id == "songlist_header"); //DocumentNode.SelectNodes("//tr[contains(@id, 'songlist_header')]/th");
+			var qualityNode = albumHtmlDocument.All.FirstOrDefault(element =>element.LocalName == "tr" && element.Id == "songlist_header");  //DocumentNode.SelectNodes("//tr[contains(@id, 'songlist_header')]/th");
 			var albumNameNode = albumHtmlDocument.All.FirstOrDefault(element => element.LocalName == "div" && element.Id == "EchoTopic")?.Children[1];  //DocumentNode.SelectSingleNode("//*[@id=\"EchoTopic\"]/h2[1]");
 			string szAlbumName;
-			if (albumNameNode != null && songNodes.Any() && qualityNodes.Any())
+			if (albumNameNode != null && songNodes.Any() && qualityNode != null)
 			{
 				//Trim spaces and dots!
 				szAlbumName = string.Join("_", WebUtility.HtmlDecode(albumNameNode.InnerHtml).Split(Path.GetInvalidFileNameChars())).Trim(new char[]{' ','.'});
@@ -363,29 +364,39 @@ namespace KhinsiderDownloader
 				Program.MainForm.Log($"Failed to parse {sUrl}");
 				return;
 			}
-			
 			Directory.CreateDirectory(Downloader.m_szDownloadPath + "\\" + szAlbumName);
 			var selectedFormat = ".mp3";
 			if (eQuality != EDownloadQuality.QUALITY_MP3_ONLY)
 			{
-				List<IElement> qualitySubNodes = qualityNodes.Skip(3).ToList();
+				//List<IElement> qualitySubNodes = qualityNodes.Skip(3).ToList();
 				//find non mp3 file
-				foreach (var cell in qualitySubNodes)
+				bool bBreak = false;
+				foreach (var cell in qualityNode.Children.ToList())
 				{
-					if (cell.InnerHtml == "FLAC")
+					foreach (var cellchilds in cell.Children.ToList())
 					{
-						selectedFormat = ".flac";
-						break;
+						if (cellchilds.InnerHtml == "FLAC")
+						{
+							selectedFormat = ".flac";
+							bBreak = true;
+							break;
+						}
+
+						if (cellchilds.InnerHtml == "OGG")
+						{
+							selectedFormat = ".ogg";
+							bBreak = true;
+							break;
+						}
+						if (cellchilds.InnerHtml == "M4A")
+						{
+							selectedFormat = ".m4a";
+							bBreak = true;
+							break;
+						}
 					}
-			
-					if (cell.InnerHtml == "OGG")
+					if(bBreak)
 					{
-						selectedFormat = ".ogg";
-						break;
-					}
-					if (cell.InnerHtml == "M4A")
-					{
-						selectedFormat = ".m4a";
 						break;
 					}
 				}
