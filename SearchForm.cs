@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows.Forms;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
@@ -58,7 +59,7 @@ namespace KhinsiderDownloader
 			if (searchresult != "Search")
 			{
 				SearchItem searchItem = new SearchItem();
-				searchItem.Name = albumNameNode.Children[1].InnerHtml;
+				searchItem.Name = HttpUtility.HtmlDecode(albumNameNode.Children[1].InnerHtml);
 				searchItem.Url = downloadHtmlResult.ResponseURI;
 				searchResult.Add(searchItem);
 				this.Invoke(new Action(() => { this.Cursor = Cursors.Default; }));
@@ -70,7 +71,7 @@ namespace KhinsiderDownloader
 				foreach (var node in searchresults)
 				{
 					SearchItem searchItem = new SearchItem();
-					searchItem.Name = node.InnerHtml;
+					searchItem.Name = HttpUtility.HtmlDecode(node.InnerHtml);
 					searchItem.Url = node.Attributes["href"].Value;
 					searchResult.Add(searchItem);
 				}
