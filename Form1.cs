@@ -213,10 +213,15 @@ namespace KhinsiderDownloader
 		{
 			Downloader.m_bSuppessLogs = chk_suppress_downloading_logs.Checked;
 		}
-	}
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+    }
 
 
-	static class Downloader
+    static class Downloader
 	{
 		public static CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
 
