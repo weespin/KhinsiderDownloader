@@ -346,7 +346,6 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "KhinsiderDownloader";
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.box_quality.ResumeLayout(false);
             this.box_quality.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.num_threads)).EndInit();

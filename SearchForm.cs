@@ -186,15 +186,5 @@ namespace KhinsiderDownloader
 				linkbox.Text += urlPrefix + currentItem.Url + Environment.NewLine;
 			}
 		}
-
-		private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
-		{
-
-		}
-
-		private void SearchForm_Resize(object sender, EventArgs e)
-		{
-			
-		}
-	}
+    }
 }

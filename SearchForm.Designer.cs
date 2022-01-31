@@ -120,7 +120,6 @@
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.Size = new System.Drawing.Size(552, 318);
 			this.tableLayoutPanel1.TabIndex = 7;
-			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
 			// 
 			// tableLayoutPanel2
 			// 
@@ -165,7 +164,6 @@
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "SearchForm";
 			this.Text = "Search";
-			this.Resize += new System.EventHandler(this.SearchForm_Resize);
 			((System.ComponentModel.ISupportInitialize)(this.pic_album)).EndInit();
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.tableLayoutPanel2.ResumeLayout(false);
