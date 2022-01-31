@@ -4,14 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Resources;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using AngleSharp;
-using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using Newtonsoft.Json;
@@ -149,7 +144,7 @@ namespace KhinsiderDownloader
 				ToggleControls(true);
 			}
 			ToggleControls(false);
-			List<string> urls = txt_urllist.Text.Split(new string[] {Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).ToList();
+			List<string> urls = txt_urllist.Text.Split(new string[] {Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
 			Task.Run(() =>
 			{
 				Downloader.DownloadAlbums(urls);
@@ -226,10 +221,10 @@ namespace KhinsiderDownloader
 		public static CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
 
 		public static bool IsDownloading = false;
-		//ParralelOptions for songs in album
+		//ParallelOptions for songs in album
 		public static ParallelOptions g_songsParralelOptions = new ParallelOptions()
 			{MaxDegreeOfParallelism = Environment.ProcessorCount};
-		//ParralelOptions for albums
+		//ParallelOptions for albums
 		public static ParallelOptions g_albumsParralelOptions = new ParallelOptions()
 			{ MaxDegreeOfParallelism = Environment.ProcessorCount };
 		public static int nTotalAlbums = 0;
@@ -285,7 +280,7 @@ namespace KhinsiderDownloader
 			{
 				Parallel.ForEach(url, g_albumsParralelOptions, DownloadAlbum);
 			}
-			catch (OperationCanceledException e)
+			catch (OperationCanceledException)
 			{
 				
 			}
