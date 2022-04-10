@@ -50,7 +50,7 @@ namespace KhinsiderDownloader
 			Downloader.HTMLResult downloadHtmlResult = Downloader.GetHTMLFromURL(endpointURL);
 			var htmlDocument = parser.ParseDocument(downloadHtmlResult.HTML);
 			//Get Album name
-			var albumNameNode = htmlDocument.All.FirstOrDefault(element => element.LocalName == "div" && element.Id == "EchoTopic");
+			var albumNameNode = htmlDocument.All.FirstOrDefault(element => element.LocalName == "div" && element.Id == "pageContent");
 			if (albumNameNode == null)
 			{
 				return searchResult;
@@ -111,13 +111,13 @@ namespace KhinsiderDownloader
 			{
 
 				var parser = new HtmlParser();
-
-				var htmlDocument = parser.ParseDocument(Downloader.GetHTMLFromURL(urlPrefix + searchItem.Url).HTML);
-				var albumNameNode = htmlDocument.All.FirstOrDefault(element => element.LocalName == "div" && element.Id == "EchoTopic");
-				var imagenode = albumNameNode.Children[4].QuerySelector("img");
+                var htmlPage = Downloader.GetHTMLFromURL(urlPrefix + searchItem.Url).HTML;
+				var htmlDocument = parser.ParseDocument(htmlPage);
+				var albumNameNode = htmlDocument.All.FirstOrDefault(element => element.ClassName == "albumImage");
+                var imagenode = albumNameNode.Children[0];
 				if (imagenode != null)
 				{
-					var imageURL = imagenode.ParentElement.GetAttribute("href");
+					var imageURL = imagenode.GetAttribute("href");
 					using (MemoryStream stream = new MemoryStream(webClient.DownloadData(imageURL)))
 					{
 						searchItem.CoverImage = new Bitmap(Image.FromStream(stream));

@@ -363,7 +363,7 @@ namespace KhinsiderDownloader
                 element.Id ==
                 "songlist_header"); //DocumentNode.SelectNodes("//tr[contains(@id, 'songlist_header')]/th");
             var albumNameNode = albumHtmlDocument.All
-                .FirstOrDefault(element => element.LocalName == "div" && element.Id == "EchoTopic")
+                .FirstOrDefault(element => element.Id == "pageContent")
                 ?.Children[1]; //DocumentNode.SelectSingleNode("//*[@id=\"EchoTopic\"]/h2[1]");
             string szAlbumName;
             if (albumNameNode != null && songNodes.Any() && qualityNode != null)
