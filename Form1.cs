@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using Newtonsoft.Json;
+// ReSharper disable ConvertToUsingDeclaration
 
 namespace KhinsiderDownloader
 {
@@ -22,6 +23,7 @@ namespace KhinsiderDownloader
 
         class UpdateTagResult
         {
+            // ReSharper disable once InconsistentNaming
             public string tag_name { get; set; }
         }
 
@@ -194,8 +196,7 @@ namespace KhinsiderDownloader
 
         private void btn_opensearch_Click(object sender, EventArgs e)
         {
-            SearchForm searchForm = new SearchForm();
-            searchForm.linkbox = txt_urllist;
+            SearchForm searchForm = new SearchForm() {linkbox = txt_urllist};
             searchForm.Show();
         }
 
@@ -480,8 +481,7 @@ namespace KhinsiderDownloader
                             try
                             {
 
-                                WebClient downloadClient = new WebClient();
-                                downloadClient.Proxy = null;
+                                WebClient downloadClient = new WebClient() {Proxy = null};
                                 Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL), filename);
                                 currentTask.ContinueWith(
                                     task =>
@@ -585,8 +585,8 @@ namespace KhinsiderDownloader
         {
         }
 
-        private static ITaskbarList3 taskbarInstance = (ITaskbarList3)new TaskbarInstance();
-        private static bool taskbarSupported = Environment.OSVersion.Version >= new Version(6, 1);
+        private static readonly ITaskbarList3 taskbarInstance = (ITaskbarList3)new TaskbarInstance();
+        private static readonly bool taskbarSupported = Environment.OSVersion.Version >= new Version(6, 1);
 
         public static void SetState(IntPtr windowHandle, TaskbarStates taskbarState)
         {
