@@ -46,7 +46,7 @@ namespace KhinsiderDownloader
 
 			List<SearchItem> searchResult = new List<SearchItem>();
 			var parser = new HtmlParser();
-			var endpointURL = "https://downloads.khinsider.com/search?search=" + query;
+			var endpointURL = "https://downloads.khinsider.com/search?search=" + query + "&albumListSize=compact";
 			Downloader.HTMLResult downloadHtmlResult = Downloader.GetHTMLFromURL(endpointURL);
 			var htmlDocument = parser.ParseDocument(downloadHtmlResult.HTML);
 			//Get Album name
@@ -66,17 +66,23 @@ namespace KhinsiderDownloader
 				return searchResult;
 			}
 			else
-			{
-				var searchresults = albumNameNode.Children[2].Children.Where(element=>element.LocalName == "a");
+            {
+                var albumlist = albumNameNode.Children[2];
+                if (albumlist.ChildElementCount == 0)
+                {
+                    return searchResult;
+                }
+                var searchresults = albumlist.Children[1].Children[0].Children[0].Children.Skip(1);//Where(element=>element.LocalName == "a");
 				foreach (var node in searchresults)
-				{
+                {
+                    var cellnode = node.Children[1].Children[0];
 					SearchItem searchItem = new SearchItem();
-					searchItem.Name = HttpUtility.HtmlDecode(node.InnerHtml);
-					searchItem.Url = node.Attributes["href"].Value;
+					searchItem.Name = HttpUtility.HtmlDecode(cellnode.InnerHtml);
+					searchItem.Url = cellnode.Attributes["href"].Value;
 					searchResult.Add(searchItem);
 				}
 			}
-			this.Invoke(new Action(() => { this.Cursor = Cursors.Default; }));
+		
 			return searchResult;
 			
 		}
@@ -89,6 +95,7 @@ namespace KhinsiderDownloader
 				pic_album.Invoke(new Action(() => { pic_album.Image = null; }));
 				pic_album.Image = null;
 				var result = DoSearch(txt_input.Text);
+                this.Invoke(new Action(() => { this.Cursor = Cursors.Default; }));
 				list_result.Invoke(new Action(() => { list_result.Items.Clear(); }));
 				foreach (var item in result)
 				{
