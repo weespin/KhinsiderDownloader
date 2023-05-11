@@ -67,7 +67,7 @@ namespace KhinsiderDownloader
 			}
 			else
             {
-                var albumlist = albumNameNode.Children[2];
+                var albumlist = albumNameNode.Children[3];
                 if (albumlist.ChildElementCount == 0)
                 {
                     return searchResult;
