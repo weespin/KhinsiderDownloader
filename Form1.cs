@@ -5,12 +5,24 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using Newtonsoft.Json;
+//using TagLib;
+//using TagLib.Mpeg;
+//using TagLib.Id3v2;
+using File = System.IO.File;
+using Version = System.Version;
+using AngleSharp.Io;
+using System.Web;
+using System.Xml.Linq;
+using static System.Windows.Forms.LinkLabel;
+
 // ReSharper disable ConvertToUsingDeclaration
 
 namespace KhinsiderDownloader
@@ -69,8 +81,8 @@ namespace KhinsiderDownloader
             Downloader.g_albumsParralelOptions.MaxDegreeOfParallelism = 1;
             num_threads.Value = 2;
             Task.Run(() => { checkUpdates(); });
+            txt_log.Text = $"KhinsiderDownloader - {new Version(Application.ProductVersion)}\r\nIf you encounter any problems, crashes, or have suggestions, please share your feedback on GitHub: https://github.com/weespin/KhinsiderDownloader/issues";
         }
-
         public void Log(string textIn)
         {
             if (txt_log.InvokeRequired)
@@ -90,7 +102,6 @@ namespace KhinsiderDownloader
             {
                 var configLines = File.ReadAllLines("khinsiderdl.config");
                 lbl_path.Text = Downloader.m_szDownloadPath = configLines[0];
-
                 Downloader.eQuality = bool.Parse(configLines[1])
                     ? Downloader.EDownloadQuality.QUALITY_MP3_ONLY
                     : Downloader.EDownloadQuality.QUALITY_BEST_ONLY;
@@ -106,7 +117,8 @@ namespace KhinsiderDownloader
                 Downloader.g_songsParralelOptions.MaxDegreeOfParallelism = Int32.Parse(configLines[2]);
                 Downloader.g_albumsParralelOptions.MaxDegreeOfParallelism = Int32.Parse(configLines[3]);
                 Downloader.m_bSuppessLogs = bool.Parse(configLines[4]);
-
+                Downloader.m_bDownloadArt = bool.Parse(configLines[5]);
+                //Downloader.m_bArtFix = bool.Parse(configLines[6]);
 
             }
             catch (Exception)
@@ -117,14 +129,14 @@ namespace KhinsiderDownloader
 
         void SaveConfig()
         {
-            string[] configLines = new string[5];
+            string[] configLines = new string[6];
             configLines[0] = Downloader.m_szDownloadPath;
             configLines[1] = (Downloader.eQuality == Downloader.EDownloadQuality.QUALITY_MP3_ONLY).ToString();
             configLines[2] = Downloader.g_songsParralelOptions.MaxDegreeOfParallelism.ToString();
             configLines[3] = Downloader.g_albumsParralelOptions.MaxDegreeOfParallelism.ToString();
             configLines[4] = Downloader.m_bSuppessLogs.ToString();
-
-
+            configLines[5] = Downloader.m_bDownloadArt.ToString();
+            //configLines[6] = Downloader.m_bArtFix.ToString();
             File.WriteAllLines("khinsiderdl.config", configLines);
         }
 
@@ -217,8 +229,19 @@ namespace KhinsiderDownloader
             Downloader.m_bSuppessLogs = chk_suppress_downloading_logs.Checked;
         }
 
+        private void chk_set_art_as_icon_CheckedChanged(object sender, EventArgs e)
+        {
+            //Downloader.m_bArtFix = chk_fix_picture.Checked;
+        }
+        private void chk_download_art_CheckedChanged(object sender, EventArgs e)
+        {
+            Downloader.m_bDownloadArt = chk_download_art.Checked;
+        }
+        private void lbl_path_Click(object sender, EventArgs e)
+        {
+            Process.Start(Downloader.m_szDownloadPath);
+        }
     }
-
 
     static class Downloader
     {
@@ -260,7 +283,9 @@ namespace KhinsiderDownloader
         public static EDownloadQuality eQuality = EDownloadQuality.QUALITY_MP3_ONLY;
         public static string m_szDownloadPath = Directory.GetCurrentDirectory() + "\\Downloads\\";
         public static bool m_bSuppessLogs;
-
+        public static bool m_bDownloadArt;
+        //public static bool m_bArtFix;
+        public static string m_szHostName = "https://downloads.khinsider.com";
         public static void DownloadAlbums(List<string> url)
         {
             g_albumsParralelOptions.CancellationToken = Downloader.cancelTokenSource.Token;
@@ -304,7 +329,6 @@ namespace KhinsiderDownloader
             public string ResponseURI;
             public string HTML;
         }
-
         public static HTMLResult GetHTMLFromURL(string sUrl)
         {
             HTMLResult result = new HTMLResult();
@@ -333,9 +357,10 @@ namespace KhinsiderDownloader
 
             return result;
         }
-
         public static void DownloadAlbum(string sUrl)
         {
+            SynchronizedCollection<Task> currentTasks = new SynchronizedCollection<Task>();
+
             string albumHTML = String.Empty;
             try
             {
@@ -366,19 +391,72 @@ namespace KhinsiderDownloader
             var albumNameNode = albumHtmlDocument.All
                 .FirstOrDefault(element => element.Id == "pageContent")
                 ?.Children[1]; //DocumentNode.SelectSingleNode("//*[@id=\"EchoTopic\"]/h2[1]");
+            var albumImageNodes = albumHtmlDocument.All.Where(element =>
+                element.LocalName == "div" &&
+                element.ClassName ==
+                "albumImage"); //.SelectNodes("//td[contains(@class, 'playlistDownloadSong')]");
+
             string szAlbumName;
             if (albumNameNode != null && songNodes.Any() && qualityNode != null)
             {
                 //Trim spaces and dots!
                 szAlbumName = string
                     .Join("_", WebUtility.HtmlDecode(albumNameNode.InnerHtml).Split(Path.GetInvalidFileNameChars()))
-                    .Trim(new char[] { ' ', '.' });
+                    .Trim(new[] { ' ', '.' });
             }
             else
             {
                 Program.MainForm.Log($"Failed to parse {sUrl}");
                 return;
             }
+
+            List<string> albumImageLinks = albumImageNodes
+                .Where(albumImageNode => albumImageNode.ChildElementCount > 0)
+                .Select(albumImageNode => albumImageNode.Children[0].GetAttribute("href"))
+                .ToList();
+
+            //byte[] ArtFix = null;
+            //string ArtFixPath = "";
+            //if (m_bArtFix)
+            //{
+            //    //find and download best image
+            //    string bestLink = albumImageLinks
+            //        .FirstOrDefault(link =>
+            //        {
+            //            string fileName = link.Split('/').Last();
+            //            string fileExtension = fileName.Split('.').Last();
+            //            return fileExtension.ToLower().Contains("cover");
+            //        }) ?? albumImageLinks.FirstOrDefault();
+            //    if (bestLink != null)
+            //    {
+            //        WebClient downloadClient = new WebClient() { Proxy = null };
+            //        ArtFix = downloadClient.DownloadData(bestLink);
+            //        ArtFixPath = bestLink;
+            //    }
+            //}
+            if (m_bDownloadArt)
+            {
+            
+                if (albumImageLinks.Count != 0)
+                {
+                    Directory.CreateDirectory(m_szDownloadPath + "\\" + szAlbumName + "\\art\\");
+                    foreach (var albumImageLink in albumImageLinks)
+                    {
+                        WebClient downloadClient = new WebClient() { Proxy = null };
+
+                        string filename = albumImageLink.Split('/').Last();
+                        var shh = string
+                            .Join("_", Uri.UnescapeDataString(filename).Split(Path.GetInvalidFileNameChars()))
+                            .Trim(new[] { ' ', '.' });
+                        Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(albumImageLink), m_szDownloadPath + "\\" + szAlbumName + "\\art\\" + shh);
+                        currentTask.ContinueWith(
+                            task => { downloadClient.Dispose(); });
+                        currentTasks.Add(currentTask);
+
+                    }
+                }
+            }
+
 
             Directory.CreateDirectory(Downloader.m_szDownloadPath + "\\" + szAlbumName);
             var selectedFormat = ".mp3";
@@ -420,7 +498,6 @@ namespace KhinsiderDownloader
                 }
             }
 
-            SynchronizedCollection<Task> currentTasks = new SynchronizedCollection<Task>();
             int nTotalSongs = songNodes.Count();
             int nCurrentSong = 0;
             try
@@ -428,7 +505,7 @@ namespace KhinsiderDownloader
                 Parallel.ForEach(songNodes, g_songsParralelOptions, song =>
                 {
                     var songPageURL =
-                        "https://downloads.khinsider.com" + song.Children[0].GetAttribute("href"); //["href"].Value;
+                        m_szHostName + song.Children[0].GetAttribute("href"); //["href"].Value;
 
                     IHtmlDocument songPageDocument;
 
@@ -480,17 +557,47 @@ namespace KhinsiderDownloader
                                               string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
                             try
                             {
-
                                 WebClient downloadClient = new WebClient() {Proxy = null};
                                 Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL), filename);
                                 currentTask.ContinueWith(
                                     task =>
                                     {
                                         downloadClient.Dispose();
+
                                         if (!IsDownloading)
                                         {
                                             File.Delete(filename);
                                             return;
+                                        }
+
+                                        //if (m_bArtFix)
+                                        //{
+                                        //    var file = AudioFile.Create(filename);
+                                        //    if (file.Tag.Pictures.Length > 0)
+                                        //    {
+                                        //        if (file.Tag.Pictures.All(n => n.Type != PictureType.FrontCover))
+                                        //        {
+                                        //            file.Tag.Pictures[0].Type = PictureType.FrontCover;
+                                        //        }
+                                        //    }
+                                        //    else
+                                        //    {
+                                        //        file.Tag.Pictures = new IPicture[]
+                                        //        {
+                                        //            new Picture(new ByteVector(ArtFix))
+                                        //            {
+                                        //                Type = PictureType.FrontCover,
+                                        //                Description = "Cover",
+                                        //                MimeType = MimeMapping.GetMimeMapping(ArtFixPath)
+                                        //            }
+                                        //        };
+                                        //    }
+                                        //    file.Save();
+                                        //}
+
+                                        if (!m_bSuppessLogs)
+                                        {
+                                            Program.MainForm.Log($"{name} has been downloaded!");
                                         }
 
                                         ++nCurrentSong;
@@ -498,12 +605,8 @@ namespace KhinsiderDownloader
                                         {
                                             UpdateTitle(nCurrentSong, nTotalSongs);
                                         }
-
-                                        if (!m_bSuppessLogs)
-                                        {
-                                            Program.MainForm.Log($"{name} has been downloaded!");
-                                        }
-                                    });
+                                        
+                                    }, TaskContinuationOptions.ExecuteSynchronously);
                                 currentTasks.Add(currentTask);
                             }
                             catch (Exception e)
