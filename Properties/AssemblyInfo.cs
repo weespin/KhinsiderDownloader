@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Weespin")]
 [assembly: AssemblyProduct("KhinsiderDownloader")]
-[assembly: AssemblyCopyright("Weespin 2022")]
+[assembly: AssemblyCopyright("Weespin 2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
