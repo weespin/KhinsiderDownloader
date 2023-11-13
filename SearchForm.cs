@@ -193,5 +193,13 @@ namespace KhinsiderDownloader
 				linkbox.Text += urlPrefix + currentItem.Url + Environment.NewLine;
 			}
 		}
+
+        private void txt_input_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+				SearchStub();
+            }
+        }
     }
 }
