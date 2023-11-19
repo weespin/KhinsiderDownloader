@@ -81,7 +81,7 @@ namespace KhinsiderDownloader
             Downloader.g_albumsParralelOptions.MaxDegreeOfParallelism = 1;
             num_threads.Value = 2;
             Task.Run(() => { checkUpdates(); });
-            txt_log.Text = $"KhinsiderDownloader - {new Version(Application.ProductVersion)}\r\nIf you encounter any problems, crashes, or have suggestions, please share your feedback on GitHub: https://github.com/weespin/KhinsiderDownloader/issues";
+            txt_log.Text = $"KhinsiderDownloader - {new Version(Application.ProductVersion)}\r\nIf you encounter any problems, crashes, or have suggestions, please share your feedback on GitHub: https://github.com/weespin/KhinsiderDownloader/issues\n";
         }
         public void Log(string textIn)
         {
@@ -565,6 +565,7 @@ namespace KhinsiderDownloader
                             try
                             {
                                 WebClient downloadClient = new WebClient() {Proxy = null};
+                                cancelTokenSource.Token.Register(downloadClient.CancelAsync);
                                 Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL), filename);
                                 currentTask.ContinueWith(
                                     task =>
@@ -602,7 +603,7 @@ namespace KhinsiderDownloader
                                         //    file.Save();
                                         //}
 
-                                        if (!m_bSuppessLogs)
+                                        if (!m_bSuppessLogs && !cancelTokenSource.Token.IsCancellationRequested)
                                         {
                                             Program.MainForm.Log($"{name} has been downloaded!");
                                         }
