@@ -401,8 +401,15 @@ namespace KhinsiderDownloader
             {
                 //Trim spaces and dots!
                 szAlbumName = string
-                    .Join("_", WebUtility.HtmlDecode(albumNameNode.InnerHtml).Split(Path.GetInvalidFileNameChars()))
+                    .Join("_", WebUtility.HtmlDecode(albumNameNode.Text()).Split(Path.GetInvalidFileNameChars()))
                     .Trim(new[] { ' ', '.' });
+                //'info' hack. Remove the last words from inner child
+                if (albumNameNode.Children != null && albumNameNode.Children.Length > 0 &&
+                    szAlbumName.Length >= albumNameNode.Children[0].Text().Length)
+                {
+                    szAlbumName = szAlbumName.Substring(0, szAlbumName.Length - albumNameNode.Children[0].Text().Length);
+                }
+
             }
             else
             {
