@@ -140,7 +140,6 @@ namespace KhinsiderDownloader
 
 		void ShowImage(Bitmap bitmap)
 		{
-
 			if (bitmap == null)
 			{
 				pic_album.Invoke(new Action(() => { pic_album.Image = Properties.Resources.no_image; }));
@@ -150,8 +149,6 @@ namespace KhinsiderDownloader
 				pic_album.Invoke(new Action(() => { pic_album.Image = bitmap; }));
 
 			}
-			//lbl_noimage.Invoke(new Action(() => { lbl_noimage.Visible = bitmap == null; }));
-
 		}
 		private void list_result_SelectedIndexChanged(object sender, EventArgs e)
 		{

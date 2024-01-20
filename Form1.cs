@@ -22,6 +22,8 @@ using AngleSharp.Io;
 using System.Web;
 using System.Xml.Linq;
 using static System.Windows.Forms.LinkLabel;
+using System.Security.Policy;
+using System.Text.RegularExpressions;
 
 // ReSharper disable ConvertToUsingDeclaration
 
@@ -359,6 +361,11 @@ namespace KhinsiderDownloader
         }
         public static void DownloadAlbum(string sUrl)
         {
+            bool bIsPlaylist = false;
+            string pattern = @"\/playlist\/\w+";
+            Regex regex = new Regex(pattern);
+            bIsPlaylist = regex.Match(sUrl).Success;
+
             SynchronizedCollection<Task> currentTasks = new SynchronizedCollection<Task>();
 
             string albumHTML = String.Empty;
@@ -376,10 +383,10 @@ namespace KhinsiderDownloader
                 return;
             }
 
-
+           
             var parser = new HtmlParser();
             var albumHtmlDocument = parser.ParseDocument(albumHTML);
-            Program.MainForm.Log($"Parsing {sUrl}");
+            Program.MainForm.Log($"\r\nParsing {sUrl}");
             var songNodes = albumHtmlDocument.All.Where(element =>
                 element.LocalName == "td" &&
                 element.ClassName ==
@@ -546,7 +553,14 @@ namespace KhinsiderDownloader
                     {
                         var dlsongentry = downloadLinkNodes[index];
                         var songFileURL = dlsongentry.ParentElement.GetAttribute("href"); //.Value;
-                        if (songFileURL.EndsWith(selectedFormat))
+                        if (bIsPlaylist)
+                        {
+                            if (songFileURL.EndsWith(".mp3") && eQuality != EDownloadQuality.QUALITY_MP3_ONLY && nDownloadNodes > 1)
+                            {
+                                continue;
+                            }
+                        }
+                        if (songFileURL.EndsWith(selectedFormat) || bIsPlaylist)
                         {
                             var name = WebUtility.UrlDecode(
                                 songFileURL.Substring(songFileURL.LastIndexOf("/", StringComparison.Ordinal) + 1));
