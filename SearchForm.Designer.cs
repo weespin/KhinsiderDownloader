@@ -62,7 +62,10 @@
             this.txt_input.Name = "txt_input";
             this.txt_input.Size = new System.Drawing.Size(291, 20);
             this.txt_input.TabIndex = 1;
+            this.txt_input.Text = "Search...";
+            this.txt_input.Enter += new System.EventHandler(this.txt_input_Enter);
             this.txt_input.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_input_KeyDown);
+            this.txt_input.Leave += new System.EventHandler(this.txt_input_Leave);
             // 
             // pic_album
             // 

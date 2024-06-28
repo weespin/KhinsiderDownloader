@@ -182,18 +182,26 @@ namespace KhinsiderDownloader
             Downloader.IsDownloading = !value;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btn_download_Click(object sender, EventArgs e)
         {
             if (Downloader.IsDownloading)
             {
-
                 Downloader.cancelTokenSource.Cancel();
                 ToggleControls(true);
+                return;
             }
             
-            ToggleControls(false);
+           
             List<string> urls = txt_urllist.Text
                 .Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
+
+            if(urls.Count == 0)
+            {
+                Log("No URLs provided!");
+                return;
+            }
+
+            ToggleControls(false);
             Task.Run(() => { Downloader.DownloadAlbums(urls); }).ContinueWith((task =>
             {
                 if (btn_download.InvokeRequired)

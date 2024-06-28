@@ -94,7 +94,7 @@
             this.btn_download.TabIndex = 2;
             this.btn_download.Text = "Download";
             this.btn_download.UseVisualStyleBackColor = true;
-            this.btn_download.Click += new System.EventHandler(this.button1_Click);
+            this.btn_download.Click += new System.EventHandler(this.btn_download_Click);
             // 
             // box_quality
             // 
@@ -144,7 +144,7 @@
             // btn_selectpath
             // 
             this.btn_selectpath.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btn_selectpath.Location = new System.Drawing.Point(520, 3);
+            this.btn_selectpath.Location = new System.Drawing.Point(524, 3);
             this.btn_selectpath.Name = "btn_selectpath";
             this.btn_selectpath.Size = new System.Drawing.Size(92, 22);
             this.btn_selectpath.TabIndex = 5;
@@ -202,7 +202,7 @@
             // 
             this.label3.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(225, 8);
+            this.label3.Location = new System.Drawing.Point(229, 8);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(81, 13);
             this.label3.TabIndex = 11;
@@ -285,13 +285,13 @@
             // 
             this.tableLayoutPanel4.ColumnCount = 8;
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 114F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 97F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 107F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 88F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 47F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 112F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 42F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 159F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 104F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 155F));
             this.tableLayoutPanel4.Controls.Add(this.chk_skipdownloaded, 7, 1);
             this.tableLayoutPanel4.Controls.Add(this.chk_download_art, 0, 0);
             this.tableLayoutPanel4.Controls.Add(this.chk_suppress_downloading_logs, 0, 0);
@@ -314,9 +314,9 @@
             // 
             this.chk_skipdownloaded.AutoSize = true;
             this.chk_skipdownloaded.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chk_skipdownloaded.Location = new System.Drawing.Point(618, 32);
+            this.chk_skipdownloaded.Location = new System.Drawing.Point(622, 32);
             this.chk_skipdownloaded.Name = "chk_skipdownloaded";
-            this.chk_skipdownloaded.Size = new System.Drawing.Size(153, 24);
+            this.chk_skipdownloaded.Size = new System.Drawing.Size(149, 24);
             this.chk_skipdownloaded.TabIndex = 15;
             this.chk_skipdownloaded.Text = "Skip Downloaded";
             this.toolTip1.SetToolTip(this.chk_skipdownloaded, "Skip already downloaded songs.\r\nNote: It\'s recommended to use it with Safe Load\r\n" +
@@ -330,9 +330,9 @@
             this.chk_download_art.Dock = System.Windows.Forms.DockStyle.Fill;
             this.chk_download_art.Location = new System.Drawing.Point(3, 3);
             this.chk_download_art.Name = "chk_download_art";
-            this.chk_download_art.Size = new System.Drawing.Size(97, 23);
+            this.chk_download_art.Size = new System.Drawing.Size(113, 23);
             this.chk_download_art.TabIndex = 14;
-            this.chk_download_art.Text = "Download Art";
+            this.chk_download_art.Text = "Download Covers";
             this.chk_download_art.UseVisualStyleBackColor = true;
             this.chk_download_art.CheckedChanged += new System.EventHandler(this.chk_download_art_CheckedChanged);
             // 
@@ -340,9 +340,9 @@
             // 
             this.chk_suppress_downloading_logs.AutoSize = true;
             this.chk_suppress_downloading_logs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chk_suppress_downloading_logs.Location = new System.Drawing.Point(106, 3);
+            this.chk_suppress_downloading_logs.Location = new System.Drawing.Point(122, 3);
             this.chk_suppress_downloading_logs.Name = "chk_suppress_downloading_logs";
-            this.chk_suppress_downloading_logs.Size = new System.Drawing.Size(108, 23);
+            this.chk_suppress_downloading_logs.Size = new System.Drawing.Size(101, 23);
             this.chk_suppress_downloading_logs.TabIndex = 12;
             this.chk_suppress_downloading_logs.Text = "Suppress Logs";
             this.chk_suppress_downloading_logs.UseVisualStyleBackColor = true;
@@ -351,9 +351,9 @@
             // btn_opensearch
             // 
             this.btn_opensearch.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_opensearch.Location = new System.Drawing.Point(618, 3);
+            this.btn_opensearch.Location = new System.Drawing.Point(622, 3);
             this.btn_opensearch.Name = "btn_opensearch";
-            this.btn_opensearch.Size = new System.Drawing.Size(153, 23);
+            this.btn_opensearch.Size = new System.Drawing.Size(149, 23);
             this.btn_opensearch.TabIndex = 7;
             this.btn_opensearch.Text = "Search";
             this.btn_opensearch.UseVisualStyleBackColor = true;

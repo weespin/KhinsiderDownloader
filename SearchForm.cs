@@ -17,18 +17,27 @@ namespace KhinsiderDownloader
 	public partial class SearchForm : Form
 	{
 		static string urlPrefix = "https://downloads.khinsider.com";
-
-		WebClient webClient;
+		Color SearchBarDefaultTextColor = Color.Black;
+        Color SearchBarPlaceholderTextColor = Color.Gray;
+		bool IsPlaceholderText = true;
+        WebClient webClient;
 		public TextBox linkbox = null;
 		public SearchForm()
 		{
 			InitializeComponent();
 			webClient = new WebClient();
 			pic_album.Image = Resources.no_image;
+			SearchBarDefaultTextColor = txt_input.ForeColor;
+			SetPlaceholderText();
 		}
 
+		void SetPlaceholderText()
+		{
+            txt_input.ForeColor = SearchBarPlaceholderTextColor;
+            txt_input.Text = "Search...";
+        }
 
-		class SearchItem
+        class SearchItem
 		{
 			public override string ToString()
 			{
@@ -197,6 +206,25 @@ namespace KhinsiderDownloader
             {
 				SearchStub();
             }
+        }
+
+        private void txt_input_Enter(object sender, EventArgs e)
+        {
+			if (IsPlaceholderText)
+			{
+				txt_input.ForeColor = SearchBarDefaultTextColor;
+				txt_input.Text = "";
+				IsPlaceholderText = false;
+			}
+        }
+
+        private void txt_input_Leave(object sender, EventArgs e)
+        {
+			if (!IsPlaceholderText && String.IsNullOrEmpty(txt_input.Text))
+			{
+				SetPlaceholderText();
+				IsPlaceholderText = true;
+			}
         }
     }
 }
