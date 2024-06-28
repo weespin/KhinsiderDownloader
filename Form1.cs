@@ -43,70 +43,100 @@ namespace KhinsiderDownloader
 
         private void checkUpdates()
         {
-            WebClient cl = new WebClient();
-            cl.Headers.Add("User-Agent", "KhinsiderDownloader");
-            cl.Headers.Add("Content-Type", "application/json");
-            string lastVersion =
-                cl.DownloadString(new Uri("https://api.github.com/repos/weespin/KhinsiderDownloader/releases/latest"));
-            var result = JsonConvert.DeserializeObject<UpdateTagResult>(lastVersion);
-            Version newVersion = new Version(result.tag_name);
-            Version currentVersion = new Version(Application.ProductVersion);
-
-            if (newVersion > currentVersion)
+            try
             {
-                var promptResult = MessageBox.Show(
-                    "Download the latest version of KhinsiderDownloader!\nClick OK to open the download page",
-                    "A new update has been released!", MessageBoxButtons.OKCancel);
-                if (promptResult == DialogResult.OK)
+                WebClient cl = new WebClient();
+                cl.Headers.Add("User-Agent", "KhinsiderDownloader");
+                cl.Headers.Add("Content-Type", "application/json");
+                string lastVersion =
+                    cl.DownloadString(new Uri("https://api.github.com/repos/weespin/KhinsiderDownloader/releases/latest"));
+                var result = JsonConvert.DeserializeObject<UpdateTagResult>(lastVersion);
+                Version newVersion = new Version(result.tag_name);
+                Version currentVersion = new Version(Application.ProductVersion);
+
+                if (newVersion > currentVersion)
                 {
-                    Process.Start("https://github.com/weespin/KhinsiderDownloader/releases");
+                    var promptResult = MessageBox.Show(
+                        "Download the latest version of KhinsiderDownloader!\nClick OK to open the download page",
+                        "A new update has been released!", MessageBoxButtons.OKCancel);
+                    if (promptResult == DialogResult.OK)
+                    {
+                        Process.Start("https://github.com/weespin/KhinsiderDownloader/releases");
+                    }
+                }
+                else if (newVersion < currentVersion)
+                {
+                    if (label1.InvokeRequired)
+                    {
+                        label1.Invoke(new Action(() => { label1.Text = "DEV " + label1.Text; }));
+
+                    }
                 }
             }
-            else if (newVersion < currentVersion)
+            catch (Exception e)
             {
-                if (label1.InvokeRequired)
-                {
-                    label1.Invoke(new Action(() => { label1.Text = "DEV " + label1.Text; }));
-
-                }
+                Log($"Failed to check for updates!");
             }
-
         }
 
         public Form1()
         {
             InitializeComponent();
             Program.MainForm = this;
-            LoadConfig();
+          
+            if (!LoadConfig())
+            {
+                Downloader.g_songsParralelOptions.MaxDegreeOfParallelism = (int)num_threads.Value;
+                Downloader.g_albumsParralelOptions.MaxDegreeOfParallelism = 1;
+            }
+
             lbl_path.Text = Downloader.m_szDownloadPath;
-            Downloader.g_songsParralelOptions.MaxDegreeOfParallelism = 2;
-            Downloader.g_albumsParralelOptions.MaxDegreeOfParallelism = 1;
-            num_threads.Value = 2;
             Task.Run(() => { checkUpdates(); });
-            txt_log.Text = $"KhinsiderDownloader - {new Version(Application.ProductVersion)}\r\nIf you encounter any problems, crashes, or have suggestions, please share your feedback on GitHub: https://github.com/weespin/KhinsiderDownloader/issues\n";
+
+            Log($"KhinsiderDownloader - {new Version(Application.ProductVersion)}\r\nIf you encounter any problems, crashes, or have suggestions, please share your feedback on GitHub: https://github.com/weespin/KhinsiderDownloader/issues");
         }
         public void Log(string textIn)
         {
+            var LogAction = new Action(() =>
+            {
+                txt_log.Text += $"{textIn}\r\n";
+                txt_log.SelectionStart = txt_log.Text.Length;
+                txt_log.ScrollToCaret();
+            });
+
             if (txt_log.InvokeRequired)
             {
-                txt_log.Invoke(new Action(() =>
-                {
-                    txt_log.Text += $"{textIn}\r\n";
-                    txt_log.SelectionStart = txt_log.Text.Length;
-                    txt_log.ScrollToCaret();
-                }));
+                //Called from a different thread
+                txt_log.Invoke(LogAction);
+            }
+            else
+            {
+                LogAction();
             }
         }
 
-        public void LoadConfig()
+        public bool LoadConfig()
         {
+            if (!File.Exists("khinsiderdl.config"))
+            {
+                //Probably a first launch
+                return false;
+            }
             try
             {
                 var configLines = File.ReadAllLines("khinsiderdl.config");
                 lbl_path.Text = Downloader.m_szDownloadPath = configLines[0];
+                
                 Downloader.eQuality = bool.Parse(configLines[1])
                     ? Downloader.EDownloadQuality.QUALITY_MP3_ONLY
                     : Downloader.EDownloadQuality.QUALITY_BEST_ONLY;
+                num_threads.Value = Downloader.g_songsParralelOptions.MaxDegreeOfParallelism = Int32.Parse(configLines[2]);
+                num_album_threads.Value = Downloader.g_albumsParralelOptions.MaxDegreeOfParallelism = Int32.Parse(configLines[3]);
+                chk_suppress_downloading_logs.Checked = Downloader.m_bSuppessLogs = bool.Parse(configLines[4]);
+                chk_download_art.Checked = Downloader.m_bDownloadArt = bool.Parse(configLines[5]);
+                chk_skipdownloaded.Checked = Downloader.m_bSkipDownloaded = bool.Parse(configLines[6]);
+                //Downloader.m_bArtFix = bool.Parse(configLines[7]);
+
                 if (Downloader.eQuality == Downloader.EDownloadQuality.QUALITY_MP3_ONLY)
                 {
                     radio_mp3only.Checked = true;
@@ -116,29 +146,26 @@ namespace KhinsiderDownloader
                     radio_betterquality.Checked = true;
                 }
 
-                Downloader.g_songsParralelOptions.MaxDegreeOfParallelism = Int32.Parse(configLines[2]);
-                Downloader.g_albumsParralelOptions.MaxDegreeOfParallelism = Int32.Parse(configLines[3]);
-                Downloader.m_bSuppessLogs = bool.Parse(configLines[4]);
-                Downloader.m_bDownloadArt = bool.Parse(configLines[5]);
-                //Downloader.m_bArtFix = bool.Parse(configLines[6]);
-
+                return true;
             }
             catch (Exception)
             {
                 Program.MainForm.Log("Failed to load a config!");
             }
+            return false;
         }
 
         void SaveConfig()
         {
-            string[] configLines = new string[6];
+            string[] configLines = new string[7];
             configLines[0] = Downloader.m_szDownloadPath;
             configLines[1] = (Downloader.eQuality == Downloader.EDownloadQuality.QUALITY_MP3_ONLY).ToString();
             configLines[2] = Downloader.g_songsParralelOptions.MaxDegreeOfParallelism.ToString();
             configLines[3] = Downloader.g_albumsParralelOptions.MaxDegreeOfParallelism.ToString();
             configLines[4] = Downloader.m_bSuppessLogs.ToString();
             configLines[5] = Downloader.m_bDownloadArt.ToString();
-            //configLines[6] = Downloader.m_bArtFix.ToString();
+            configLines[6] = Downloader.m_bSkipDownloaded.ToString();
+            //configLines[7] = Downloader.m_bArtFix.ToString();
             File.WriteAllLines("khinsiderdl.config", configLines);
         }
 
@@ -151,7 +178,6 @@ namespace KhinsiderDownloader
             num_album_threads.Enabled = value;
             num_threads.Enabled = value;
             Downloader.IsDownloading = !value;
-
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -229,6 +255,7 @@ namespace KhinsiderDownloader
         private void chk_suppress_downloading_logs_CheckedChanged(object sender, EventArgs e)
         {
             Downloader.m_bSuppessLogs = chk_suppress_downloading_logs.Checked;
+            SaveConfig();
         }
 
         private void chk_set_art_as_icon_CheckedChanged(object sender, EventArgs e)
@@ -238,7 +265,14 @@ namespace KhinsiderDownloader
         private void chk_download_art_CheckedChanged(object sender, EventArgs e)
         {
             Downloader.m_bDownloadArt = chk_download_art.Checked;
+            SaveConfig();
         }
+        private void chk_skipdownloaded_CheckedChanged(object sender, EventArgs e)
+        {
+            Downloader.m_bSkipDownloaded = chk_skipdownloaded.Checked;
+            SaveConfig();
+        }
+
         private void lbl_path_Click(object sender, EventArgs e)
         {
             Process.Start(Downloader.m_szDownloadPath);
@@ -286,8 +320,11 @@ namespace KhinsiderDownloader
         public static string m_szDownloadPath = Directory.GetCurrentDirectory() + "\\Downloads\\";
         public static bool m_bSuppessLogs;
         public static bool m_bDownloadArt;
+        public static bool m_bSkipDownloaded;
+
         //public static bool m_bArtFix;
         public static string m_szHostName = "https://downloads.khinsider.com";
+
         public static void DownloadAlbums(List<string> url)
         {
             g_albumsParralelOptions.CancellationToken = Downloader.cancelTokenSource.Token;
@@ -564,6 +601,7 @@ namespace KhinsiderDownloader
                         {
                             var name = WebUtility.UrlDecode(
                                 songFileURL.Substring(songFileURL.LastIndexOf("/", StringComparison.Ordinal) + 1));
+
                             if (!IsDownloading)
                             {
                                 return;
@@ -576,10 +614,22 @@ namespace KhinsiderDownloader
 
                             string filename = m_szDownloadPath + "\\" + szAlbumName + "\\" +
                                               string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
+
+                            if(Downloader.m_bSkipDownloaded && File.Exists(filename))
+                            {
+                                ++nCurrentSong;
+                                if (nTotalAlbums == 1)
+                                {
+                                    UpdateTitle(nCurrentSong, nTotalSongs);
+                                }
+                                return;
+                            }
+
                             try
                             {
                                 WebClient downloadClient = new WebClient() {Proxy = null};
                                 cancelTokenSource.Token.Register(downloadClient.CancelAsync);
+
                                 Task currentTask = downloadClient.DownloadFileTaskAsync(new Uri(songFileURL), filename);
                                 currentTask.ContinueWith(
                                     task =>
@@ -633,11 +683,23 @@ namespace KhinsiderDownloader
                             }
                             catch (Exception e)
                             {
-                                string errorMessage = $"Failed to download {songFileURL} to {filename} ({e.Message})";
+                                string errorMessage = $"Failed to download {songFileURL} to {filename}\r\n({e.Message})";
                                 Program.MainForm.Log(errorMessage);
 #if DEBUG
                                 Debug.WriteLine(errorMessage);
 #endif
+
+                                try
+                                {
+                                    if (File.Exists(filename))
+                                    {
+                                        File.Delete(filename);
+                                    }
+                                }
+                                catch (Exception removeexc)
+                                {
+                                    Program.MainForm.Log($"Failed to remove semi-downloaded {filename}\r\n({removeexc.Message})");
+                                }
                             }
                         }
                     }
