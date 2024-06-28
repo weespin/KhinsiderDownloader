@@ -186,8 +186,8 @@ namespace KhinsiderDownloader
         {
             if (Downloader.IsDownloading)
             {
-                Downloader.cancelTokenSource.Cancel();
                 ToggleControls(true);
+                Downloader.cancelTokenSource.Cancel();
                 return;
             }
             
@@ -573,6 +573,15 @@ namespace KhinsiderDownloader
 
             int nTotalSongs = songNodes.Count();
             int nCurrentSong = 0;
+            Action IncrementTitle = () => 
+            {
+                ++nCurrentSong;
+                if (nTotalAlbums == 1)
+                {
+                    UpdateTitle(nCurrentSong, nTotalSongs);
+                }
+            };
+
             try
             {
                 Parallel.ForEach(songNodes, g_songsParralelOptions, song =>
@@ -628,23 +637,22 @@ namespace KhinsiderDownloader
                             {
                                 return;
                             }
+                            string filename = m_szDownloadPath + "\\" + szAlbumName + "\\" +
+                                             string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
+
+                            if (Downloader.m_bSkipDownloaded && File.Exists(filename))
+                            {
+                                IncrementTitle();
+
+                                if (!m_bSuppessLogs)
+                                    Program.MainForm.Log($"{name} has been skipped as it already exists.");
+                               
+                                return;
+                            }
 
                             if (!m_bSuppessLogs)
                             {
                                 Program.MainForm.Log($"Downloading {name}...");
-                            }
-
-                            string filename = m_szDownloadPath + "\\" + szAlbumName + "\\" +
-                                              string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
-
-                            if(Downloader.m_bSkipDownloaded && File.Exists(filename))
-                            {
-                                ++nCurrentSong;
-                                if (nTotalAlbums == 1)
-                                {
-                                    UpdateTitle(nCurrentSong, nTotalSongs);
-                                }
-                                return;
                             }
 
                             try
@@ -694,12 +702,8 @@ namespace KhinsiderDownloader
                                             Program.MainForm.Log($"{name} has been downloaded!");
                                         }
 
-                                        ++nCurrentSong;
-                                        if (nTotalAlbums == 1)
-                                        {
-                                            UpdateTitle(nCurrentSong, nTotalSongs);
-                                        }
-                                        
+                                        IncrementTitle();
+
                                     }, TaskContinuationOptions.ExecuteSynchronously);
                                 currentTasks.Add(currentTask);
                             }
