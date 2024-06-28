@@ -1,7 +1,7 @@
 # KhinsiderDownloader 🎵 
 
 ### A simple Bulk Khinsider downloader with GUI
-[![Github Downloads (total)](https://img.shields.io/github/downloads/weespin/KhinsiderDownloader/total.svg)](https://github.com/weespin/KhinsiderDownloader)
+[![Github Downloads (total)](https://img.shields.io/github/downloads/weespin/KhinsiderDownloader/total.svg)](https://tooomm.github.io/github-release-stats/?username=weespin&repository=KhinsiderDownloader)
 # Screenshots
 ![Screenshot](https://yiff.nullcoreproject.net/i/95845254.png)
 
