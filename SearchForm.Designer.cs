@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SearchForm));
             this.btn_search = new System.Windows.Forms.Button();
             this.txt_input = new System.Windows.Forms.TextBox();
@@ -38,6 +39,7 @@
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pic_album)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -52,6 +54,7 @@
             this.btn_search.Size = new System.Drawing.Size(291, 25);
             this.btn_search.TabIndex = 0;
             this.btn_search.Text = "Search";
+            this.toolTip1.SetToolTip(this.btn_search, "Start a search process");
             this.btn_search.UseVisualStyleBackColor = true;
             this.btn_search.Click += new System.EventHandler(this.btn_search_Click);
             // 
@@ -62,7 +65,10 @@
             this.txt_input.Name = "txt_input";
             this.txt_input.Size = new System.Drawing.Size(291, 20);
             this.txt_input.TabIndex = 1;
+            this.txt_input.Text = "Search...";
+            this.txt_input.Enter += new System.EventHandler(this.txt_input_Enter);
             this.txt_input.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_input_KeyDown);
+            this.txt_input.Leave += new System.EventHandler(this.txt_input_Leave);
             // 
             // pic_album
             // 
@@ -82,6 +88,7 @@
             this.btn_add.Size = new System.Drawing.Size(237, 25);
             this.btn_add.TabIndex = 4;
             this.btn_add.Text = "Add";
+            this.toolTip1.SetToolTip(this.btn_add, "Add selected album to the download list.");
             this.btn_add.UseVisualStyleBackColor = true;
             this.btn_add.Click += new System.EventHandler(this.btn_add_Click);
             // 
@@ -93,6 +100,7 @@
             this.btn_add_all.Size = new System.Drawing.Size(237, 26);
             this.btn_add_all.TabIndex = 5;
             this.btn_add_all.Text = "Add All";
+            this.toolTip1.SetToolTip(this.btn_add_all, "Add all albums from the search list.");
             this.btn_add_all.UseVisualStyleBackColor = true;
             this.btn_add_all.Click += new System.EventHandler(this.btn_add_all_Click);
             // 
@@ -184,5 +192,6 @@
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
-	}
+        private System.Windows.Forms.ToolTip toolTip1;
+    }
 }
