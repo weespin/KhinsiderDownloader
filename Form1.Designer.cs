@@ -93,6 +93,7 @@
             this.btn_download.Size = new System.Drawing.Size(145, 28);
             this.btn_download.TabIndex = 2;
             this.btn_download.Text = "Download";
+            this.toolTip1.SetToolTip(this.btn_download, "Start downloading process.");
             this.btn_download.UseVisualStyleBackColor = true;
             this.btn_download.Click += new System.EventHandler(this.btn_download_Click);
             // 
@@ -116,6 +117,7 @@
             this.radio_betterquality.Size = new System.Drawing.Size(137, 17);
             this.radio_betterquality.TabIndex = 5;
             this.radio_betterquality.Text = "Best (FLAC/M4A/OGG)";
+            this.toolTip1.SetToolTip(this.radio_betterquality, "Download highest audio quality: FLAC > OGG > M4A");
             this.radio_betterquality.UseVisualStyleBackColor = true;
             // 
             // radio_mp3only
@@ -128,6 +130,7 @@
             this.radio_mp3only.TabIndex = 4;
             this.radio_mp3only.TabStop = true;
             this.radio_mp3only.Text = "MP3 Only";
+            this.toolTip1.SetToolTip(this.radio_mp3only, "Download only MP3 files");
             this.radio_mp3only.UseVisualStyleBackColor = true;
             this.radio_mp3only.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
             // 
@@ -139,16 +142,18 @@
             this.lbl_path.Size = new System.Drawing.Size(35, 13);
             this.lbl_path.TabIndex = 4;
             this.lbl_path.Text = "label1";
+            this.toolTip1.SetToolTip(this.lbl_path, "This is the download directory for albums. Click to open.\r\n");
             this.lbl_path.Click += new System.EventHandler(this.lbl_path_Click);
             // 
             // btn_selectpath
             // 
             this.btn_selectpath.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.btn_selectpath.Location = new System.Drawing.Point(524, 3);
+            this.btn_selectpath.Location = new System.Drawing.Point(525, 3);
             this.btn_selectpath.Name = "btn_selectpath";
-            this.btn_selectpath.Size = new System.Drawing.Size(92, 22);
+            this.btn_selectpath.Size = new System.Drawing.Size(91, 22);
             this.btn_selectpath.TabIndex = 5;
             this.btn_selectpath.Text = "Select Path...";
+            this.toolTip1.SetToolTip(this.btn_selectpath, "Select the directory where albums will be stored.");
             this.btn_selectpath.UseVisualStyleBackColor = true;
             this.btn_selectpath.Click += new System.EventHandler(this.btn_DownloadPath_Click);
             // 
@@ -162,12 +167,13 @@
             this.label1.Size = new System.Drawing.Size(82, 13);
             this.label1.TabIndex = 6;
             this.label1.Text = "Weespin - 2024";
+            this.toolTip1.SetToolTip(this.label1, "Made with <3 by Weespin\r\nThanks y\'all for using this app ");
             this.label1.DoubleClick += new System.EventHandler(this.label1_DoubleClick);
             // 
             // num_threads
             // 
             this.num_threads.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.num_threads.Location = new System.Drawing.Point(476, 4);
+            this.num_threads.Location = new System.Drawing.Point(482, 4);
             this.num_threads.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -181,6 +187,8 @@
             this.num_threads.Name = "num_threads";
             this.num_threads.Size = new System.Drawing.Size(36, 20);
             this.num_threads.TabIndex = 8;
+            this.toolTip1.SetToolTip(this.num_threads, "Increase number of threads per album for faster downloads, but it may cause insta" +
+        "bility.");
             this.num_threads.Value = new decimal(new int[] {
             2,
             0,
@@ -192,7 +200,7 @@
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(367, 8);
+            this.label2.Location = new System.Drawing.Point(376, 8);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(99, 13);
             this.label2.TabIndex = 9;
@@ -202,7 +210,7 @@
             // 
             this.label3.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(229, 8);
+            this.label3.Location = new System.Drawing.Point(243, 8);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(81, 13);
             this.label3.TabIndex = 11;
@@ -211,7 +219,7 @@
             // num_album_threads
             // 
             this.num_album_threads.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.num_album_threads.Location = new System.Drawing.Point(318, 4);
+            this.num_album_threads.Location = new System.Drawing.Point(331, 4);
             this.num_album_threads.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -225,6 +233,8 @@
             this.num_album_threads.Name = "num_album_threads";
             this.num_album_threads.Size = new System.Drawing.Size(39, 20);
             this.num_album_threads.TabIndex = 10;
+            this.toolTip1.SetToolTip(this.num_album_threads, "Increase number of album threads for faster downloads, but it may cause instabili" +
+        "ty.");
             this.num_album_threads.Value = new decimal(new int[] {
             1,
             0,
@@ -285,12 +295,12 @@
             // 
             this.tableLayoutPanel4.ColumnCount = 8;
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 107F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 102F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 88F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 47F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 112F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 42F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 104F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 45F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 106F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 43F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 97F));
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 155F));
             this.tableLayoutPanel4.Controls.Add(this.chk_skipdownloaded, 7, 1);
             this.tableLayoutPanel4.Controls.Add(this.chk_download_art, 0, 0);
@@ -330,9 +340,10 @@
             this.chk_download_art.Dock = System.Windows.Forms.DockStyle.Fill;
             this.chk_download_art.Location = new System.Drawing.Point(3, 3);
             this.chk_download_art.Name = "chk_download_art";
-            this.chk_download_art.Size = new System.Drawing.Size(113, 23);
+            this.chk_download_art.Size = new System.Drawing.Size(132, 23);
             this.chk_download_art.TabIndex = 14;
-            this.chk_download_art.Text = "Download Covers";
+            this.chk_download_art.Text = "Download Album Art";
+            this.toolTip1.SetToolTip(this.chk_download_art, "Download Art Cover (Saved to /art/ directory)");
             this.chk_download_art.UseVisualStyleBackColor = true;
             this.chk_download_art.CheckedChanged += new System.EventHandler(this.chk_download_art_CheckedChanged);
             // 
@@ -340,11 +351,12 @@
             // 
             this.chk_suppress_downloading_logs.AutoSize = true;
             this.chk_suppress_downloading_logs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.chk_suppress_downloading_logs.Location = new System.Drawing.Point(122, 3);
+            this.chk_suppress_downloading_logs.Location = new System.Drawing.Point(141, 3);
             this.chk_suppress_downloading_logs.Name = "chk_suppress_downloading_logs";
-            this.chk_suppress_downloading_logs.Size = new System.Drawing.Size(101, 23);
+            this.chk_suppress_downloading_logs.Size = new System.Drawing.Size(96, 23);
             this.chk_suppress_downloading_logs.TabIndex = 12;
             this.chk_suppress_downloading_logs.Text = "Suppress Logs";
+            this.toolTip1.SetToolTip(this.chk_suppress_downloading_logs, "Suppress downloading logs to improve performance (No download progress logging)");
             this.chk_suppress_downloading_logs.UseVisualStyleBackColor = true;
             this.chk_suppress_downloading_logs.CheckedChanged += new System.EventHandler(this.chk_suppress_downloading_logs_CheckedChanged);
             // 
@@ -356,6 +368,7 @@
             this.btn_opensearch.Size = new System.Drawing.Size(149, 23);
             this.btn_opensearch.TabIndex = 7;
             this.btn_opensearch.Text = "Search";
+            this.toolTip1.SetToolTip(this.btn_opensearch, "Open a search window to find albums instead of visiting the Khinsider website.");
             this.btn_opensearch.UseVisualStyleBackColor = true;
             this.btn_opensearch.Click += new System.EventHandler(this.btn_opensearch_Click);
             // 

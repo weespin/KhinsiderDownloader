@@ -390,23 +390,30 @@ namespace KhinsiderDownloader
             httpWebRequest.Proxy = null;
             httpWebRequest.KeepAlive = false;
             httpWebRequest.Timeout = 30 * 1000; //TCP timeout
-            using (HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse())
+            try
             {
-                if (httpWebResponse.StatusCode == HttpStatusCode.OK)
+                using (HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse())
                 {
-                    result.ResponseURI = httpWebResponse.ResponseUri.ToString();
-
-                    using (Stream responseStream = httpWebResponse.GetResponseStream())
+                    if (httpWebResponse.StatusCode == HttpStatusCode.OK)
                     {
-                        if (responseStream != null)
+                        result.ResponseURI = httpWebResponse.ResponseUri.ToString();
+
+                        using (Stream responseStream = httpWebResponse.GetResponseStream())
                         {
-                            using (StreamReader reader = new StreamReader(responseStream))
+                            if (responseStream != null)
                             {
-                                result.HTML = reader.ReadToEnd();
+                                using (StreamReader reader = new StreamReader(responseStream))
+                                {
+                                    result.HTML = reader.ReadToEnd();
+                                }
                             }
                         }
                     }
                 }
+            }
+            catch (Exception e)
+            { 
+
             }
 
             return result;
