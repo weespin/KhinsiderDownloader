@@ -40,7 +40,7 @@ namespace KhinsiderDownloader
             // ReSharper disable once InconsistentNaming
             public string tag_name { get; set; }
         }
-
+        
         private void checkUpdates()
         {
             try
@@ -177,6 +177,8 @@ namespace KhinsiderDownloader
             btn_selectpath.Enabled = value;
             num_album_threads.Enabled = value;
             num_threads.Enabled = value;
+            chk_download_art.Enabled = value;
+            chk_skipdownloaded.Enabled = value;
             Downloader.IsDownloading = !value;
         }
 
@@ -275,6 +277,8 @@ namespace KhinsiderDownloader
 
         private void lbl_path_Click(object sender, EventArgs e)
         {
+            Downloader.CheckAndCreateDownloadFolder();
+
             Process.Start(Downloader.m_szDownloadPath);
         }
     }
@@ -295,7 +299,13 @@ namespace KhinsiderDownloader
 
         public static int nTotalAlbums = 0;
         public static int nAlbumsDownloaded = 0;
-
+        public static void CheckAndCreateDownloadFolder()
+        {
+            if (!Directory.Exists(Downloader.m_szDownloadPath))
+            {
+                Directory.CreateDirectory(Downloader.m_szDownloadPath);
+            }
+        }
         static void UpdateTitle(int value, int max)
         {
             Program.MainForm.Invoke(new Action(() =>
@@ -330,10 +340,7 @@ namespace KhinsiderDownloader
             g_albumsParralelOptions.CancellationToken = Downloader.cancelTokenSource.Token;
             g_songsParralelOptions.CancellationToken = Downloader.cancelTokenSource.Token;
 
-            if (!Directory.Exists(Downloader.m_szDownloadPath))
-            {
-                Directory.CreateDirectory(Downloader.m_szDownloadPath);
-            }
+            CheckAndCreateDownloadFolder();
 
             var maxthreads = g_songsParralelOptions.MaxDegreeOfParallelism *
                              g_albumsParralelOptions.MaxDegreeOfParallelism;
@@ -688,7 +695,6 @@ namespace KhinsiderDownloader
 #if DEBUG
                                 Debug.WriteLine(errorMessage);
 #endif
-
                                 try
                                 {
                                     if (File.Exists(filename))
