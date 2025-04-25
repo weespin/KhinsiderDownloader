@@ -39,6 +39,7 @@ namespace KhinsiderDownloader
         {
             // ReSharper disable once InconsistentNaming
             public string tag_name { get; set; }
+            public bool prerelease { get; set; }
         }
         
         private void checkUpdates()
@@ -48,28 +49,35 @@ namespace KhinsiderDownloader
                 WebClient cl = new WebClient();
                 cl.Headers.Add("User-Agent", "KhinsiderDownloader");
                 cl.Headers.Add("Content-Type", "application/json");
-                string lastVersion =
-                    cl.DownloadString(new Uri("https://api.github.com/repos/weespin/KhinsiderDownloader/releases/latest"));
-                var result = JsonConvert.DeserializeObject<UpdateTagResult>(lastVersion);
-                Version newVersion = new Version(result.tag_name);
+
+                string releasesJson = cl.DownloadString(new Uri("https://api.github.com/repos/weespin/KhinsiderDownloader/releases"));
+                var releases = JsonConvert.DeserializeObject<List<UpdateTagResult>>(releasesJson);
+
                 Version currentVersion = new Version(Application.ProductVersion);
 
-                if (newVersion > currentVersion)
+                var newerReleases = releases
+                    .Where(r => !r.prerelease && new Version(r.tag_name) > currentVersion)
+                    .OrderBy(r => new Version(r.tag_name))
+                    .ToList();
+
+                if (newerReleases.Any())
                 {
+                    var latestRelease = newerReleases.First();
+
                     var promptResult = MessageBox.Show(
-                        "Download the latest version of KhinsiderDownloader!\nClick OK to open the download page",
+                        $"Download the latest version of KhinsiderDownloader (v{latestRelease.tag_name})!\nClick OK to open the download page",
                         "A new update has been released!", MessageBoxButtons.OKCancel);
+
                     if (promptResult == DialogResult.OK)
                     {
                         Process.Start("https://github.com/weespin/KhinsiderDownloader/releases");
                     }
                 }
-                else if (newVersion < currentVersion)
+                else
                 {
                     if (label1.InvokeRequired)
                     {
                         label1.Invoke(new Action(() => { label1.Text = "DEV " + label1.Text; }));
-
                     }
                 }
             }
