@@ -1,0 +1,6 @@
+rd /s /q "..\..\build"
+rd /s /q "..\..\cmake-build-debug"
+rd /s /q "..\..\vcpkg_installed"
+rd /s /q "..\..\Output"
+rd /s /q "..\..\.rcc"
+rd /s /q "..\..\.qt"

@@ -1,0 +1,51 @@
+name: Linux Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Cache Qt
+      uses: actions/cache@v2
+      with:
+        path: '${{ runner.temp }}/qt'
+        key: ${{ runner.os }}-qt-${{ hashFiles('**/CMakeLists.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-qt-
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.8.3'
+        target: 'desktop'
+        dir: '${{ runner.temp }}/qt'
+
+    - name: Cache CMake dependencies
+      uses: actions/cache@v2
+      with:
+        path: build/.cmake
+        key: ${{ runner.os }}-cmake-${{ hashFiles('**/CMakeLists.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-cmake-
+
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y build-essential cmake 
+
+    - name: Build with CMake
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        make
+

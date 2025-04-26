@@ -1,0 +1,57 @@
+name: Windows Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Set VCPKG env
+      run: |
+        echo "VCPKG_ROOT=${env:TEMP}\\vcpkg" >> $env:GITHUB_ENV
+        echo "VCPKG_DEFAULT_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Cache Qt
+      uses: actions/cache@v2
+      with:
+        path: '${{ env.TEMP }}\qt'
+        key: windows-qt-${{ hashFiles('**/CMakeLists.txt') }}
+        restore-keys: |
+          windows-qt-
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.8.3'
+        target: 'desktop'
+        dir: '${{ env.TEMP }}\qt'
+        arch: 'win64_msvc2019_64'
+
+    - name: Cache CMake dependencies
+      uses: actions/cache@v2
+      with:
+        path: build/.cmake
+        key: windows-cmake-${{ hashFiles('**/CMakeLists.txt') }}
+        restore-keys: |
+          windows-cmake-
+
+    - name: Install dependencies (vcpkg + cmake)
+      run: |
+        git clone https://github.com/microsoft/vcpkg $env:TEMP\vcpkg
+        $env:TEMP\vcpkg\bootstrap-vcpkg.bat
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' --yes
+
+    - name: Build with CMake
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=$env:TEMP\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
+        cmake --build . --config Release

@@ -1,0 +1,1 @@
+#include "SearchViewModel.h"
