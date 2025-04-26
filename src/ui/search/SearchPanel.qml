@@ -103,6 +103,10 @@ Rectangle {
                                         color: "#6C98C4" // match parent background
                                         radius: 10
                                     }
+                                    onAccepted:
+                                    {
+                                        appController.searchVM.performSearch(textfield.text);
+                                    }
 
                                     onHoveredChanged: {
                                         if (hovered) {
