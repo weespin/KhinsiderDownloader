@@ -153,15 +153,11 @@ jobs:
           .\createInstaller.bat
           cd ..\..
           
-      - name: Pack Release
-        run: |
-          Compress-Archive -Path build\Release\* -DestinationPath build\Release.zip
-          
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-release-${{ needs.prebuild.outputs.version }}
-          path: build/Release.zip
+          path: build/Release/*
 
       - name: Upload Installer
         uses: actions/upload-artifact@v4
