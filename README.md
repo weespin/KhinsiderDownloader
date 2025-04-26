@@ -72,6 +72,7 @@ cmake ..
 make -j$(nproc)
 cd ..
 chmod +x scripts/linux/deploy.sh
+./scripts/linux/deploy.sh
 ```
 
 ## 🤝 Contributing
