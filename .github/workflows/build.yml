@@ -1,0 +1,234 @@
+name: Build Pipeline
+
+on:
+  push:
+    branches:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  prebuild:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      run_windows: ${{ steps.check_flags.outputs.run_windows }}
+      run_linux: ${{ steps.check_flags.outputs.run_linux }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Increment APP_VERSION
+        run: |
+          VERSION=$(cat APP_VERSION)
+          BASE=$(echo "$VERSION" | sed 's/-.*//')
+          SUFFIX=$(echo "$VERSION" | grep -oP '(?<=-).*' || echo "")
+          IFS='.' read -r -a PARTS <<< "$BASE"
+
+          LAST_COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+
+          if echo "$LAST_COMMIT_MESSAGE" | grep -q "\[MAJOR\]"; then
+            PARTS[0]=$((PARTS[0]+1))
+            PARTS[1]=0
+            PARTS[2]=0
+          elif echo "$LAST_COMMIT_MESSAGE" | grep -q "\[MINOR\]"; then
+            PARTS[1]=$((PARTS[1]+1))
+            PARTS[2]=0
+          elif echo "$LAST_COMMIT_MESSAGE" | grep -q "\[PATCH\]"; then
+            PARTS[2]=$((PARTS[2]+1))
+          fi
+
+          PARTS[3]=$((PARTS[3]+1)) # always bump build number
+
+          NEW_VERSION="${PARTS[0]}.${PARTS[1]}.${PARTS[2]}.${PARTS[3]}"
+          if [ -n "$SUFFIX" ]; then
+            NEW_VERSION="$NEW_VERSION-$SUFFIX"
+          fi
+          echo "$NEW_VERSION" > APP_VERSION
+
+      - name: Commit updated APP_VERSION
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add APP_VERSION
+          git commit -m "ci: bump APP_VERSION"
+          git push
+
+      - name: Get Version
+        id: get_version
+        run: |
+          echo "version=$(cat APP_VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Check Build Flags
+        id: check_flags
+        run: |
+          MESSAGE=$(git log -1 --pretty=%B)
+
+          if echo "$MESSAGE" | grep -q "\[skip-ci\]"; then
+            echo "run_linux=false" >> $GITHUB_OUTPUT
+            echo "run_windows=false" >> $GITHUB_OUTPUT
+          else
+            if echo "$MESSAGE" | grep -q "\[no-linux\]"; then
+              echo "run_linux=false" >> $GITHUB_OUTPUT
+            else
+              echo "run_linux=true" >> $GITHUB_OUTPUT
+            fi
+
+            if echo "$MESSAGE" | grep -q "\[no-win\]"; then
+              echo "run_windows=false" >> $GITHUB_OUTPUT
+            else
+              echo "run_windows=true" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  windows_build:
+    needs: prebuild
+    if: needs.prebuild.outputs.run_windows == 'true'
+    runs-on: windows-latest
+    steps:
+      - name: Set VCPKG env
+        run: |
+          echo "VCPKG_ROOT=C:\vcpkg" >> $env:GITHUB_ENV
+          echo "VCPKG_DEFAULT_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+          
+      - name: Export GitHub Actions cache variables
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+            
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Cache Qt
+        uses: actions/cache@v4
+        with:
+          path: '${{ env.TEMP }}\qt'
+          key: windows-qt-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            windows-qt-
+
+      - name: Install Qt 6.8.3
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          target: 'desktop'
+          dir: '${{ env.TEMP }}\qt'
+          modules: 'qt5compat qtshadertools'
+          arch: 'win64_msvc2022_64'
+
+      - name: Cache CMake dependencies
+        uses: actions/cache@v4
+        with:
+          path: build/.cmake
+          key: windows-cmake-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            windows-cmake-
+            
+      - name: Update VCPKG Baseline
+        run: |
+          & "C:\vcpkg\vcpkg.exe" x-update-baseline
+          
+      - name: Build with CMake
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --config Release
+          cd ..
+      
+      - name: Run windeployqt
+        run: |
+         &"D:\qt\Qt\6.8.3\msvc2022_64\bin\windeployqt.exe" --qmldir src\ui --no-translations --release --force-openssl build\Release\appKhinsiderQT.exe
+        
+      - name: Download INNO SETUP
+        run: |
+         choco install innosetup
+      
+      - name: Create Installer
+        run: | 
+          cd scripts\windows
+          .\createInstaller.bat
+          cd ..\..
+          
+      - name: Pack Release
+        run: |
+          Compress-Archive -Path build\Release\* -DestinationPath build\Release.zip
+          
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release-${{ needs.prebuild.outputs.version }}
+          path: build/Release.zip
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer-${{ needs.prebuild.outputs.version }}
+          path: build/Installer/KhinsiderInstaller.exe
+
+  linux_build:
+    needs: prebuild
+    if: needs.prebuild.outputs.run_linux == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Cache Qt
+        uses: actions/cache@v4
+        with:
+          path: '${{ runner.temp }}/qt'
+          key: ${{ runner.os }}-qt-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-qt-
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          target: 'desktop'
+          dir: '${{ runner.temp }}/qt'
+
+      - name: Cache CMake dependencies
+        uses: actions/cache@v4
+        with:
+          path: build/.cmake
+          key: ${{ runner.os }}-cmake-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libcurl4-openssl-dev
+
+      - name: Build with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+          cd ..
+          
+      - name: RunDeploy
+        run: |
+          chmod +x ./scripts/linux/deploy.sh
+          ./scripts/linux/deploy.sh
+        
+      - name: Send Artifact
+        uses: actions/upload-artifact@v4
+        with:
+            name: linux-release-${{ needs.prebuild.outputs.version }}
+            path: deploy/result/KhinsiderQT*.AppImage
+
+  postbuild:
+    needs: [prebuild, windows_build, linux_build]
+    if: |
+      always() && 
+      (needs.prebuild.outputs.run_windows == 'false' || needs.windows_build.result == 'success') && 
+      (needs.prebuild.outputs.run_linux == 'false' || needs.linux_build.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2

@@ -12,8 +12,6 @@ LINUXDEPLOY_BIN="$DEPLOY_DIR/linuxdeploy-x86_64.AppImage"
 PLUGIN_QT_URL="https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
 PLUGIN_QT_BIN="$DEPLOY_DIR/linuxdeploy-plugin-qt-x86_64.AppImage"
 
-cd "$(dirname "$0")"
-
 mkdir -p $DEPLOY_DIR $RESULT_DIR
 
 echo "Downloading linuxdeploy..."

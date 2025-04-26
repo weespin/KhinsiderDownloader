@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set PROJECT_DIR=%~dp0..\..\
+set PROJECT_DIR=%~dp0..\..
 set QT_FOUND=false
 set QT_VERSION=
 set QT_MSVC_PATH=
@@ -46,6 +46,7 @@ if not exist "!QT_MSVC_PATH!" (
 )
 
 set EXE_PATH=%PROJECT_DIR%\build\Release\appKhinsiderQT.exe
-
+echo %PROJECT_DIR%
+echo %EXE_PATH%
 ::TODO! Exclude unused libraries (--no-)
-"!QT_MSVC_PATH!\windeployqt.exe" --qmldir %PROJECT_DIR%\src\ui --no-translations --release --force-openssl "%EXE_PATH%"
+"!QT_MSVC_PATH!\windeployqt.exe" --qmldir "%PROJECT_DIR%"\src\ui --no-translations --release --force-openssl "%EXE_PATH%"

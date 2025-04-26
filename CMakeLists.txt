@@ -33,7 +33,10 @@ set(QML_IMPORT_PATH
         "${CMAKE_CURRENT_SOURCE_DIR}/icons"
         CACHE STRING "QML import paths" FORCE
 )
+
+if(WIN32)
 set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resource.rc")
+endif()
 
 qt_standard_project_setup(REQUIRES 6.8)
 
