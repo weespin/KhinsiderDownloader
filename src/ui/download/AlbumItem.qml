@@ -271,12 +271,6 @@ Item {
                                     Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
 
                                     fillMode: Image.PreserveAspectFit
-
-                                    ColorOverlay {
-                                        anchors.fill: parent
-                                        source: parent
-                                        color: "white"
-                                    }
                                     MouseArea
                                     {
                                           hoverEnabled: false;
