@@ -2,6 +2,7 @@
 ### A simple Bulk Khinsider downloader with GUI
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Github Downloads (total)](https://img.shields.io/github/downloads/weespin/KhinsiderDownloader/total.svg)](https://tooomm.github.io/github-release-stats/?username=weespin&repository=KhinsiderDownloader)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/weespin/KhinsiderDownloader/build.yml)
 # Screenshots
 ![Screenshot](https://weesp.in/i/309ce634ce4115ee.png)
 
