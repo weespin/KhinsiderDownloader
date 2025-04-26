@@ -2,16 +2,18 @@ import QtQuick
 import QtQuick.Dialogs
 import "../shared"
 import QtQml
+import QtQuick.Layouts
+import QtQuick
 Rectangle {
     color: "#2c3e50"
     height: 700
     width: 400
 
     Connections{
-         target: appController.settingsVM
-         onUpdateFound: {
-               messageDialog.visible = true;
-           }
+        target: appController.settingsVM
+        onUpdateFound: {
+            messageDialog.visible = true;
+        }
     }
 
     UpdateCheckerDialog {
@@ -89,15 +91,41 @@ Rectangle {
                 height: parent.height
                 radius: 10
                 width: parent.parent.width * 0.7
-
-                Text {
+                RowLayout
+                {
+                    id: logrow
                     anchors.fill: parent
                     anchors.leftMargin: 8
-                    color: "#ffffff"
-                    font.pointSize: 12
-                    text: "Supress Logs"
-                    verticalAlignment: Text.AlignVCenter
+                    anchors.rightMargin: 8
+                    Text {
+
+                        color: "#ffffff"
+                        font.pointSize: 12
+                        text: "Enable Logging"
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    Item {
+                        Layout.fillWidth: true
+                    }
+                    Text {
+                        color: "#99ffffff"
+                        font.pointSize: 12
+                        text: "Open Log Path"
+                        verticalAlignment: Text.AlignVCenter
+                        MouseArea
+                        {
+                            width: parent.width
+                            height: logrow.height
+                            y: logrow.y - parent.y
+                            onClicked:
+                            {
+                                Qt.openUrlExternally("file:///" +  appController.logController.logDir);
+                            }
+                        }
+                    }
                 }
+
+
             }
             WEnumButton {
                 height: parent.height
@@ -320,11 +348,11 @@ Rectangle {
                 Component.onCompleted: {
                     model.clear();
                     model.append({
-                        text: "True"
-                    });
+                                     text: "True"
+                                 });
                     model.append({
-                        text: "False"
-                    });
+                                     text: "False"
+                                 });
                     selectedIndex = 1
                     selectedIndex = 0
                     selectedIndex = appController.settingsVM.settings.skipDownloaded ? 0 : 1;

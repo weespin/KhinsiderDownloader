@@ -1,6 +1,7 @@
 #ifndef APPCONTROLLER_H
 #define APPCONTROLLER_H
 
+#include "LogController.h"
 #include "pages/about/aboutcontroller.h"
 #include "pages/search/SearchViewModel.h"
 #include "pages/search/SearchAlbumInfoViewModel.h"
@@ -16,6 +17,7 @@ class AppController : public QObject
     Q_PROPERTY(SettingsViewModel* settingsVM READ settingsVM CONSTANT)
     Q_PROPERTY(DownloaderModel* downloaderModel READ downloaderModel CONSTANT)
     Q_PROPERTY(AboutController* aboutController READ aboutController CONSTANT)
+    Q_PROPERTY(LogController* logController READ logController)
 
 public:
     explicit AppController(QObject *parent = nullptr)
@@ -28,6 +30,11 @@ public:
         m_downloadController = new DownloaderController(this,m_settingsController->settingsVM()->settings());
         m_aboutController = new AboutController(this);
         setupConnections();
+        LogController::instance().setSettings(m_settingsController->settingsVM()->settings());
+        qSetMessagePattern("%{type} %{message}");
+        qInstallMessageHandler([](QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+         LogController::instance().messageHandler(type, context, msg);
+        });
     }
     DownloaderModel* downloaderModel() const {return m_downloadController->downloaderVM();}
     SearchViewModel* searchVM() const { return m_searchVM; }
@@ -35,6 +42,7 @@ public:
     SettingsViewModel* settingsVM() const { return m_settingsController->settingsVM(); }
     SettingsController* settingsController() const { return m_settingsController; }
     AboutController* aboutController() const {return m_aboutController;}
+    LogController* logController() {return &LogController::instance();}
 
 private:
     void setupConnections()
@@ -61,6 +69,8 @@ private:
         connect(m_searchVM, &SearchViewModel::addAllAlbumsRequested,
                    m_searchVM->searchResult(), &SearchResultModel::addAllAlbumsRequested);
         connect(m_searchVM->searchResult(), &SearchResultModel::requestAddAlbums,m_downloadController, &DownloaderController::requestAddAlbums);
+
+
     }
 private:
     // Member variables

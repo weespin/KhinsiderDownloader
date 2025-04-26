@@ -105,8 +105,8 @@ Item {
                 // Status
                 ColumnLayout {
                     height: parent.height * 0.2 - leftColumn.spacing
-                    anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 10
+                    Layout.alignment: Qt.AlignBottom
+                    Layout.bottomMargin: 10
                     spacing: 10
                     width: parent.width
                     WButton {

@@ -82,6 +82,8 @@ qt_add_executable(appKhinsiderQT
         src/pages/search/SearchViewModel.cpp
 		src/pages/about/aboutcontroller.h 
 		src/pages/about/aboutcontroller.cpp
+        src/LogController.cpp
+        src/LogController.h
 )
 
 target_include_directories(appKhinsiderQT PRIVATE
