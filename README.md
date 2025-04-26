@@ -1,7 +1,4 @@
-
 # KhinsiderDownloader 🎵 
-### 🚨 **C# version of KhinsiderDownloader will be deprecated soon!**  
-#### Visit the [**experimental branch**](https://github.com/weespin/KhinsiderDownloader/tree/experimental) for new beta/unstable builds.
 ### A simple Bulk Khinsider downloader with GUI
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Github Downloads (total)](https://img.shields.io/github/downloads/weespin/KhinsiderDownloader/total.svg)](https://tooomm.github.io/github-release-stats/?username=weespin&repository=KhinsiderDownloader)
@@ -116,6 +113,7 @@ GNU General Public License as published by the Free Software Foundation, either 
 This program is distributed in the hope that it will be useful,  
 but **WITHOUT ANY WARRANTY**; without even the implied warranty of **MERCHANTABILITY** or **FITNESS FOR A PARTICULAR PURPOSE**.  
 See the GNU General Public License for more details.
+
 
 You should have received a copy of the GNU General Public License along with this program.  
 If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
