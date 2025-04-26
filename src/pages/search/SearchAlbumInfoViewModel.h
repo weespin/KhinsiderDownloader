@@ -60,6 +60,7 @@ public:
 signals:
     void currentAlbumChanged();
     void downloadRequested(QSharedPointer<Album> album, DownloadQuality quality);
+
 public slots:
     void setCurrentAlbum(QSharedPointer<Album> album) {
         m_currentAlbumPtr = album;

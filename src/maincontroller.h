@@ -58,6 +58,9 @@ private:
                     m_downloadController, &DownloaderController::onMaxConcurrentOperationsChanged);
         connect(m_settingsController->settingsVM()->settings(), &Settings::downloadThreadsChanged,
                    m_downloadController, &DownloaderController::onThreadsNumberChanged);
+        connect(m_searchVM, &SearchViewModel::addAllAlbumsRequested,
+                   m_searchVM->searchResult(), &SearchResultModel::addAllAlbumsRequested);
+        connect(m_searchVM->searchResult(), &SearchResultModel::requestAddAlbums,m_downloadController, &DownloaderController::requestAddAlbums);
     }
 private:
     // Member variables

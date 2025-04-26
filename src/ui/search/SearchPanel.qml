@@ -207,7 +207,11 @@ Rectangle {
                         height: 40
                         label: "Add All"
                         width: parent.width * 0.2
-                        y: 0
+                        onClicked:
+                        {
+                            appController.searchVM.addAllAlbumsRequested();
+                            searchList.hideAllResults();
+                        }
                     }
                 }
             }
@@ -231,6 +235,7 @@ Rectangle {
             //}
             //Search Info
             SearchResultsList {
+                id: searchList;
                 height: parent.height - rectangle.height - 30
                 width: parent.width
             }

@@ -15,6 +15,7 @@ public:
         : QObject(parent)
     {
         m_resultModel = new SearchResultModel(this);
+
     }
 
     SearchResultModel* searchResult() const { return m_resultModel; }
@@ -36,6 +37,8 @@ signals:
         void albumSelected(QSharedPointer<Album> album);
         void searchResultChanged();
         void performSearch(const QString &query);
+        void addAllAlbumsRequested();
+
 private:
     SearchResultModel* m_resultModel;
     int m_selectedIndex = -1;

@@ -46,6 +46,12 @@ public:
         m_albums = albums;
         endResetModel();
     }
+public slots:
+    void addAllAlbumsRequested() {
+        emit requestAddAlbums(m_albums, DownloadQuality::UNKNOWN);
+    }
+    signals:
+    void requestAddAlbums(QVector<QSharedPointer<Album>> albums, DownloadQuality quality);
 
 private:
     QVector<QSharedPointer<Album>> m_albums;

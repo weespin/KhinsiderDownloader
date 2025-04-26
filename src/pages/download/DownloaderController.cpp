@@ -411,6 +411,21 @@ void DownloaderController::onMaxConcurrentOperationsChanged() {
     m_downloadManager->setDownloadLimitPerThread(m_settings->maxConcurrentDownloadsPerThread());
 }
 
+void DownloaderController::requestAddAlbums(QVector<QSharedPointer<Album>> albums, DownloadQuality quality)
+{
+    for (const auto &album : albums) {
+        addAlbumToDownload(album, quality);
+
+        if (!album->isInfoParsed()) {
+            fetchFullAlbumData(album);
+        } else {
+            processSongDownloads(album, quality);
+        }
+    }
+
+    updateModelData();
+}
+
 void DownloaderController::parseDownloadLinks(QSharedPointer<Album> album) {
     // unused
     for (QSharedPointer<Song> &song: album->songs()) {

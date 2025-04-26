@@ -29,7 +29,8 @@ public slots:
     void addToDownloadList(const QString &List);
     void onThreadsNumberChanged();
     void onMaxConcurrentOperationsChanged();
-
+    void requestAddAlbums(QVector<QSharedPointer<Album>> albums, DownloadQuality quality);
+    
 private:
     void onAlbumDataFetched(QSharedPointer<Album> album, DownloadQuality quality);
     void processSongDownloads(QSharedPointer<Album> album, DownloadQuality quality);

@@ -4,7 +4,11 @@ import "../shared"
 
 Item {
     id: root
-
+    function hideAllResults()
+    {
+        root.isSearching = true;
+        root.selectedIndex = -1;
+    }
 
     property int selectedIndex: appController.searchVM.selectedIndex
     property bool isSearching: false
@@ -108,8 +112,7 @@ Item {
     Connections {
            target: appController.searchVM
            function onPerformSearch() {
-               root.isSearching = true;
-               root.selectedIndex = -1;
+               root.hideAllResults();
            }
        }
 
