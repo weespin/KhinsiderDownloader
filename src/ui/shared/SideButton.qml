@@ -26,6 +26,8 @@ Item {
 
         Image {
             id: icon
+            width:parent.width
+            height: parent.height * 0.7
             source:  "../../../icons/about.svg" // default icon
             anchors.horizontalCenter: parent.horizontalCenter
             fillMode: Image.PreserveAspectFit

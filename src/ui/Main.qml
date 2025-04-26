@@ -123,6 +123,7 @@ Window {
                     Item {
                         Layout.preferredHeight: 10
                     }
+
                     SideButton {
                         id: leftdownloadbutton
                         Layout.preferredHeight: 40
@@ -134,6 +135,7 @@ Window {
                             maincol.state = "downloadtab"
                             slider.jump(leftdownloadbutton);
                         }
+
                     }
 
                     SideButton {
@@ -168,7 +170,7 @@ Window {
 
                     SideButton {
                         id: leftaboutbutton
-                        Layout.preferredHeight: 50
+                        Layout.preferredHeight: 45
                         Layout.alignment: Qt.AlignBottom
                         iconSource: "../../icons/about.svg"
                         iconFallback: "qrc:/icons/about.svg"
