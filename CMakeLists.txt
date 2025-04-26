@@ -80,6 +80,8 @@ qt_add_executable(appKhinsiderQT
         src/parser/Album.h
 		${app_icon_resource_windows}
         src/pages/search/SearchViewModel.cpp
+		src/pages/about/aboutcontroller.h 
+		src/pages/about/aboutcontroller.cpp
 )
 
 target_include_directories(appKhinsiderQT PRIVATE

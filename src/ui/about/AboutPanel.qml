@@ -112,19 +112,33 @@ Rectangle {
         Item {
             Layout.fillHeight: true
         }
-
-        Text
+        RowLayout
         {
-            Layout.preferredHeight: implicitHeight * 2
-            text: "<a href=\"https://weesp.in\">Weespin</a> 2025"
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            textFormat: Text.RichText
-            color:"white"
-             onLinkActivated: Qt.openUrlExternally(link)
-             font.pointSize: 16
+            Layout.preferredHeight: implicitHeight * 2
+            Text
+            {
+                Layout.fillWidth: true
+                font.pointSize: 16
+                color: "white"
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+                text: "Version: " + appController.aboutController.appVersion
+            }
+
+            Text
+            {
+                Layout.fillWidth: true
+                Layout.preferredHeight: implicitHeight
+                text: "<a href=\"https://weesp.in\">Weespin</a> 2025"
+                horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignVCenter
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                textFormat: Text.RichText
+                color: "white"
+                onLinkActivated: Qt.openUrlExternally(link)
+                font.pointSize: 16
+            }
         }
 
     }

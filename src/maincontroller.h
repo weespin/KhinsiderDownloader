@@ -1,6 +1,7 @@
 #ifndef APPCONTROLLER_H
 #define APPCONTROLLER_H
 
+#include "pages/about/aboutcontroller.h"
 #include "pages/search/SearchViewModel.h"
 #include "pages/search/SearchAlbumInfoViewModel.h"
 #include "pages/settings/SettingsController.h"
@@ -14,6 +15,7 @@ class AppController : public QObject
     Q_PROPERTY(SearchAlbumInfoViewModel* albumInfoVM READ albumInfoVM CONSTANT)
     Q_PROPERTY(SettingsViewModel* settingsVM READ settingsVM CONSTANT)
     Q_PROPERTY(DownloaderModel* downloaderModel READ downloaderModel CONSTANT)
+    Q_PROPERTY(AboutController* aboutController READ aboutController CONSTANT)
 
 public:
     explicit AppController(QObject *parent = nullptr)
@@ -24,6 +26,7 @@ public:
         m_searchController = new SearchController(this);
         m_settingsController = new SettingsController(this);
         m_downloadController = new DownloaderController(this,m_settingsController->settingsVM()->settings());
+        m_aboutController = new AboutController(this);
         setupConnections();
     }
     DownloaderModel* downloaderModel() const {return m_downloadController->downloaderVM();}
@@ -31,6 +34,7 @@ public:
     SearchAlbumInfoViewModel* albumInfoVM() const { return m_albumInfoVM; }
     SettingsViewModel* settingsVM() const { return m_settingsController->settingsVM(); }
     SettingsController* settingsController() const { return m_settingsController; }
+    AboutController* aboutController() const {return m_aboutController;}
 
 private:
     void setupConnections()
@@ -62,6 +66,7 @@ private:
     SettingsController* m_settingsController;
     SearchController *m_searchController;
     DownloaderController *m_downloadController;
+    AboutController* m_aboutController;
 };
 
 #endif // APPCONTROLLER_H
