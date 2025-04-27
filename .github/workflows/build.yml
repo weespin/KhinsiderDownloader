@@ -253,7 +253,7 @@ jobs:
       - name: Check for RELEASE or PRE-RELEASE in commit message
         id: check_release
         run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          COMMIT_MESSAGE=$(git log -2 --pretty=%B)
           if echo "$COMMIT_MESSAGE" | grep -q "\[RELEASE\]"; then
             echo "create_release=true" >> $GITHUB_OUTPUT
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
