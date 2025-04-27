@@ -60,7 +60,7 @@ END
     return resource_script
 
 def main():
-    version_file = '..\..\APP_VERSION'  # Path to VERSION file
+    version_file = os.path.join(os.path.dirname(__file__), '..', '..', 'APP_VERSION')
     version = read_version_from_file(version_file)
     
     if version:
