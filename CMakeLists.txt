@@ -86,7 +86,7 @@ qt_add_executable(appKhinsiderQT
 
 target_include_directories(appKhinsiderQT PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/Parser"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/parser"
         ${CURL_INCLUDE_DIRS}
         ${LIBXML2_INCLUDE_DIRS}
         ${Qt6Network_INCLUDE_DIRS}
