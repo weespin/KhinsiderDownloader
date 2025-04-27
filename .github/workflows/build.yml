@@ -235,3 +235,67 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check for RELEASE or PRE-RELEASE in commit message
+        id: check_release
+        run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          if echo "$COMMIT_MESSAGE" | grep -q "\[RELEASE\]"; then
+            echo "create_release=true" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          elif echo "$COMMIT_MESSAGE" | grep -q "\[PRE-RELEASE\]"; then
+            echo "create_release=true" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "create_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get version from APP_VERSION
+        id: get_version
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          VERSION=$(cat APP_VERSION)
+          CLEAN_VERSION=$(echo "$VERSION" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+          echo "version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+          echo "tag_version=v$CLEAN_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Download all artifacts
+        if: steps.check_release.outputs.create_release == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Prepare release assets
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          mkdir -p release-assets
+          
+          if [ -d "release-artifacts/linux-release-${{ needs.prebuild.outputs.version }}" ]; then
+            cd release-artifacts/linux-release-${{ needs.prebuild.outputs.version }}
+            find . -name "*.zip" -exec unzip {} \;
+            find . -name "*.AppImage" -exec cp {} ../../release-assets/ \;
+            cd ../..
+          fi
+          
+          # Copy Windows installer to release assets
+          if [ -d "release-artifacts/windows-installer-${{ needs.prebuild.outputs.version }}" ]; then
+            cp release-artifacts/windows-installer-${{ needs.prebuild.outputs.version }}/KhinsiderInstaller.exe release-assets/KhinsiderInstaller-${{ steps.get_version.outputs.version }}.exe
+          fi
+          
+          # List all prepared assets
+          ls -la release-assets/
+
+      - name: Create Release
+        if: steps.check_release.outputs.create_release == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag_version }}
+          name: "Release: ${{ steps.get_version.outputs.version }}"
+          body: "To be filled"
+          prerelease: ${{ steps.check_release.outputs.is_prerelease }}
+          files: |
+            release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
