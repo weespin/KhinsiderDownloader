@@ -67,6 +67,7 @@ Rectangle {
                 {
                     model: appController.albumInfoVM.formats
                     WButton {
+                        visible: !appController.albumInfoVM.currentAlbum.isDownloading
                         width: parent.width * 0.6
                         anchors.horizontalCenter: parent.horizontalCenter
                         label: "Add " + modelData
