@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/about.svg</file>
+        <file>icons/albumplaceholder.jpg</file>
+        <file>icons/arrowleft.svg</file>
+        <file>icons/dl.svg</file>
+        <file>icons/search.svg</file>
+        <file>icons/settings.svg</file>
+        <file>icons/delete.svg</file>
+        <file>icons/retry.svg</file>
+        <file>CONTRIBUTORS.xml</file>
+        <file>APP_VERSION</file>
+    </qresource>
+</RCC>

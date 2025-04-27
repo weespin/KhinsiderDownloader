@@ -1,0 +1,8 @@
+{
+  "version": "2023-05-10",
+  "dependencies": [
+    "curl",
+    "libxml2"
+  ],
+  "builtin-baseline": "335eb3b7977fc5e7f9320009d30730438df6f9d8"
+}

@@ -1,0 +1,313 @@
+name: Build Pipeline
+
+on:
+  push:
+    branches:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  prebuild:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      run_windows: ${{ steps.check_flags.outputs.run_windows }}
+      run_linux: ${{ steps.check_flags.outputs.run_linux }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Check Build Flags First
+        id: check_flags
+        run: |
+          MESSAGE=$(git log -1 --pretty=%B)
+          echo "Last commit message: $MESSAGE"
+          
+          if echo "$MESSAGE" | grep -qE "\[skip-ci\]|\[no-ci\]"; then
+            echo "Detected skip CI flag, setting both platforms to false"
+            echo "run_linux=false" >> $GITHUB_OUTPUT
+            echo "run_windows=false" >> $GITHUB_OUTPUT
+            echo "skip_version_bump=true" >> $GITHUB_OUTPUT
+          else
+            if echo "$MESSAGE" | grep -q "\[no-linux\]"; then
+              echo "Skipping Linux build"
+              echo "run_linux=false" >> $GITHUB_OUTPUT
+            else
+              echo "Running Linux build"
+              echo "run_linux=true" >> $GITHUB_OUTPUT
+            fi
+      
+            if echo "$MESSAGE" | grep -q "\[no-win\]"; then
+              echo "Skipping Windows build"
+              echo "run_windows=false" >> $GITHUB_OUTPUT
+            else
+              echo "Running Windows build"
+              echo "run_windows=true" >> $GITHUB_OUTPUT
+            fi
+            echo "skip_version_bump=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Increment APP_VERSION
+        if: steps.check_flags.outputs.skip_version_bump != 'true'
+        run: |
+          VERSION=$(cat APP_VERSION)
+          BASE=$(echo "$VERSION" | sed 's/-.*//')
+          SUFFIX=$(echo "$VERSION" | grep -oP '(?<=-).*' || echo "")
+          IFS='.' read -r -a PARTS <<< "$BASE"
+          
+          LAST_COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          
+          if echo "$LAST_COMMIT_MESSAGE" | grep -q "\[MAJOR\]"; then
+            PARTS[0]=$((PARTS[0]+1))
+            PARTS[1]=0
+            PARTS[2]=0
+          elif echo "$LAST_COMMIT_MESSAGE" | grep -q "\[MINOR\]"; then
+            PARTS[1]=$((PARTS[1]+1))
+            PARTS[2]=0
+          elif echo "$LAST_COMMIT_MESSAGE" | grep -q "\[PATCH\]"; then
+            PARTS[2]=$((PARTS[2]+1))
+          fi
+          
+          PARTS[3]=$((PARTS[3]+1)) # always bump build number
+          
+          NEW_VERSION="${PARTS[0]}.${PARTS[1]}.${PARTS[2]}.${PARTS[3]}"
+          if [ -n "$SUFFIX" ]; then
+            NEW_VERSION="$NEW_VERSION-$SUFFIX"
+          fi
+          echo "$NEW_VERSION" > APP_VERSION
+      
+      - name: Bump resource.rc
+        if: steps.check_flags.outputs.skip_version_bump != 'true'
+        run: |
+          cd scripts/shared
+          python3 updateversion.py
+          cd ../..
+          
+      - name: Commit updated APP_VERSION
+        if: steps.check_flags.outputs.skip_version_bump != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add APP_VERSION
+          git add resource.rc
+          git commit -m "ci: bump version"
+          git push
+      
+      - name: Get Version
+        id: get_version
+        run: |
+          echo "version=$(cat APP_VERSION)" >> $GITHUB_OUTPUT
+          
+  windows_build:
+    needs: prebuild
+    if: needs.prebuild.outputs.run_windows == 'true'
+    runs-on: windows-latest
+    steps:
+      - name: Set VCPKG env
+        run: |
+          echo "VCPKG_ROOT=C:\vcpkg" >> $env:GITHUB_ENV
+          echo "VCPKG_DEFAULT_TRIPLET=x64-windows" >> $env:GITHUB_ENV
+          
+      - name: Export GitHub Actions cache variables
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+            
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Cache Qt
+        uses: actions/cache@v4
+        with:
+          path: '${{ env.TEMP }}\qt'
+          key: windows-qt-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            windows-qt-
+
+      - name: Install Qt 6.8.3
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          target: 'desktop'
+          dir: '${{ env.TEMP }}\qt'
+          modules: 'qt5compat qtshadertools'
+          arch: 'win64_msvc2022_64'
+
+      - name: Cache CMake dependencies
+        uses: actions/cache@v4
+        with:
+          path: build/.cmake
+          key: windows-cmake-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            windows-cmake-
+            
+      - name: Update VCPKG Baseline
+        run: |
+          & "C:\vcpkg\vcpkg.exe" x-update-baseline
+          
+      - name: Build with CMake
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --config Release
+          cd ..
+      
+      - name: Run windeployqt
+        run: |
+         &"D:\qt\Qt\6.8.3\msvc2022_64\bin\windeployqt.exe" --qmldir src\ui --no-translations --release --force-openssl build\Release\appKhinsiderQT.exe
+        
+      - name: Download INNO SETUP
+        run: |
+         choco install innosetup
+      
+      - name: Create Installer
+        run: | 
+          cd scripts\windows
+          .\createInstaller.bat
+          cd ..\..
+          
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release-${{ needs.prebuild.outputs.version }}
+          path: build/Release/*
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer-${{ needs.prebuild.outputs.version }}
+          path: build/Installer/KhinsiderInstaller.exe
+
+  linux_build:
+    needs: prebuild
+    if: needs.prebuild.outputs.run_linux == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Cache Qt
+        uses: actions/cache@v4
+        with:
+          path: '${{ runner.temp }}/qt'
+          key: ${{ runner.os }}-qt-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-qt-
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          target: 'desktop'
+          dir: '${{ runner.temp }}/qt'
+          modules: 'qt5compat qtshadertools'
+
+      - name: Cache CMake dependencies
+        uses: actions/cache@v4
+        with:
+          path: build/.cmake
+          key: ${{ runner.os }}-cmake-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake libcurl4-openssl-dev
+
+      - name: Build with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+          cd ..
+          
+      - name: RunDeploy
+        run: |
+          chmod +x ./scripts/linux/deploy.sh
+          ./scripts/linux/deploy.sh
+        
+      - name: Send Artifact
+        uses: actions/upload-artifact@v4
+        with:
+            name: linux-release-${{ needs.prebuild.outputs.version }}
+            path: deploy/result/KhinsiderQT*.AppImage
+
+  postbuild:
+    needs: [prebuild, windows_build, linux_build]
+    if: |
+      always() && 
+      (needs.prebuild.outputs.run_windows == 'false' || needs.windows_build.result == 'success') && 
+      (needs.prebuild.outputs.run_linux == 'false' || needs.linux_build.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check for RELEASE or PRE-RELEASE in commit message
+        id: check_release
+        run: |
+          COMMIT_MESSAGE=$(git log -2 --pretty=%B)
+          if echo "$COMMIT_MESSAGE" | grep -q "\[RELEASE\]"; then
+            echo "create_release=true" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          elif echo "$COMMIT_MESSAGE" | grep -q "\[PRE-RELEASE\]"; then
+            echo "create_release=true" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "create_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get version from APP_VERSION
+        id: get_version
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          VERSION=$(cat APP_VERSION)
+          CLEAN_VERSION=$(echo "$VERSION" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+          echo "version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+          echo "tag_version=v$CLEAN_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Download all artifacts
+        if: steps.check_release.outputs.create_release == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Prepare release assets
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          mkdir -p release-assets
+          
+          if [ -d "release-artifacts/linux-release-${{ needs.prebuild.outputs.version }}" ]; then
+            cd release-artifacts/linux-release-${{ needs.prebuild.outputs.version }}
+            find . -name "*.zip" -exec unzip {} \;
+            find . -name "*.AppImage" -exec cp {} ../../release-assets/ \;
+            cd ../..
+          fi
+          
+          # Copy Windows installer to release assets
+          if [ -d "release-artifacts/windows-installer-${{ needs.prebuild.outputs.version }}" ]; then
+            cp release-artifacts/windows-installer-${{ needs.prebuild.outputs.version }}/KhinsiderInstaller.exe release-assets/KhinsiderInstaller-${{ steps.get_version.outputs.version }}.exe
+          fi
+          
+          # List all prepared assets
+          ls -la release-assets/
+
+      - name: Create Release
+        if: steps.check_release.outputs.create_release == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag_version }}
+          name: "Release: ${{ steps.get_version.outputs.version }}"
+          body: "To be filled"
+          prerelease: ${{ steps.check_release.outputs.is_prerelease }}
+          files: |
+            release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
