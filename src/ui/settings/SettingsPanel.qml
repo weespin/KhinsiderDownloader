@@ -50,7 +50,14 @@ Rectangle {
                         anchors.fill: parent;
                         onClicked:
                         {
-                            Qt.openUrlExternally("file://" + app.settings.downloadPath);
+                            if (Qt.platform.os === "windows")
+                            {
+                                Qt.openUrlExternally("file:///" +  app.settings.downloadPath);
+                            }
+                            else
+                            {
+                                Qt.openUrlExternally("file://" + app.settings.downloadPath);
+                            }
                         }
                     }
                 }
@@ -105,7 +112,16 @@ Rectangle {
                             y: logrow.y - parent.y
                             onClicked:
                             {
-                                Qt.openUrlExternally("file:///" +  app.logController.logDir);
+                                if (Qt.platform.os === "windows")
+                                {
+                                    Qt.openUrlExternally("file:///" +  app.logController.logDir);
+                                }
+                                else
+                                {
+                                     Qt.openUrlExternally("file://" +  app.logController.logDir);
+                                }
+
+
                             }
                         }
                     }
