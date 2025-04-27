@@ -16,16 +16,47 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      
+      - name: Check Build Flags First
+        id: check_flags
+        run: |
+          MESSAGE=$(git log -1 --pretty=%B)
+          echo "Last commit message: $MESSAGE"
+          
+          if echo "$MESSAGE" | grep -qE "\[skip-ci\]|\[no-ci\]"; then
+            echo "Detected skip CI flag, setting both platforms to false"
+            echo "run_linux=false" >> $GITHUB_OUTPUT
+            echo "run_windows=false" >> $GITHUB_OUTPUT
+            echo "skip_version_bump=true" >> $GITHUB_OUTPUT
+          else
+            if echo "$MESSAGE" | grep -q "\[no-linux\]"; then
+              echo "Skipping Linux build"
+              echo "run_linux=false" >> $GITHUB_OUTPUT
+            else
+              echo "Running Linux build"
+              echo "run_linux=true" >> $GITHUB_OUTPUT
+            fi
+      
+            if echo "$MESSAGE" | grep -q "\[no-win\]"; then
+              echo "Skipping Windows build"
+              echo "run_windows=false" >> $GITHUB_OUTPUT
+            else
+              echo "Running Windows build"
+              echo "run_windows=true" >> $GITHUB_OUTPUT
+            fi
+            echo "skip_version_bump=false" >> $GITHUB_OUTPUT
+          fi
+      
       - name: Increment APP_VERSION
+        if: steps.check_flags.outputs.skip_version_bump != 'true'
         run: |
           VERSION=$(cat APP_VERSION)
           BASE=$(echo "$VERSION" | sed 's/-.*//')
           SUFFIX=$(echo "$VERSION" | grep -oP '(?<=-).*' || echo "")
           IFS='.' read -r -a PARTS <<< "$BASE"
-
+          
           LAST_COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-
+          
           if echo "$LAST_COMMIT_MESSAGE" | grep -q "\[MAJOR\]"; then
             PARTS[0]=$((PARTS[0]+1))
             PARTS[1]=0
@@ -36,21 +67,24 @@ jobs:
           elif echo "$LAST_COMMIT_MESSAGE" | grep -q "\[PATCH\]"; then
             PARTS[2]=$((PARTS[2]+1))
           fi
-
+          
           PARTS[3]=$((PARTS[3]+1)) # always bump build number
-
+          
           NEW_VERSION="${PARTS[0]}.${PARTS[1]}.${PARTS[2]}.${PARTS[3]}"
           if [ -n "$SUFFIX" ]; then
             NEW_VERSION="$NEW_VERSION-$SUFFIX"
           fi
           echo "$NEW_VERSION" > APP_VERSION
+      
       - name: Bump resource.rc
+        if: steps.check_flags.outputs.skip_version_bump != 'true'
         run: |
           cd scripts/shared
           python3 updateversion.py
           cd ../..
           
       - name: Commit updated APP_VERSION
+        if: steps.check_flags.outputs.skip_version_bump != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -58,40 +92,12 @@ jobs:
           git add resource.rc
           git commit -m "ci: bump version"
           git push
-
+      
       - name: Get Version
         id: get_version
         run: |
           echo "version=$(cat APP_VERSION)" >> $GITHUB_OUTPUT
-
-      - name: Check Build Flags
-        id: check_flags
-        run: |
-            MESSAGE=$(git log -1 --pretty=%B)
-            echo "Last commit message: $MESSAGE"
-            
-            if echo "$MESSAGE" | grep -qE "\[skip-ci\]|\[no-ci\]"; then
-            echo "Detected skip CI flag, setting both platforms to false"
-            echo "run_linux=false" >> $GITHUB_OUTPUT
-            echo "run_windows=false" >> $GITHUB_OUTPUT
-            else
-            if echo "$MESSAGE" | grep -q "\[no-linux\]"; then
-                echo "Skipping Linux build"
-                echo "run_linux=false" >> $GITHUB_OUTPUT
-            else
-                echo "Running Linux build"
-                echo "run_linux=true" >> $GITHUB_OUTPUT
-            fi
-        
-            if echo "$MESSAGE" | grep -q "\[no-win\]"; then
-                echo "Skipping Windows build"
-                echo "run_windows=false" >> $GITHUB_OUTPUT
-            else
-                echo "Running Windows build"
-                echo "run_windows=true" >> $GITHUB_OUTPUT
-            fi
-            fi
-
+          
   windows_build:
     needs: prebuild
     if: needs.prebuild.outputs.run_windows == 'true'
