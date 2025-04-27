@@ -91,6 +91,7 @@ void DownloaderModel::cancelAllDownloads() {
     beginResetModel();
     m_albums.clear();
     endResetModel();
+    emit totalsChanged();
 }
 
 void DownloaderModel::cancelAlbum(int index) {
@@ -99,6 +100,7 @@ void DownloaderModel::cancelAlbum(int index) {
     beginResetModel();
     m_albums.removeAt(index);
     endResetModel();
+    emit totalsChanged();
 }
 
 void DownloaderModel::retryAlbum(int index) {

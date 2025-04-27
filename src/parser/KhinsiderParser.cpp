@@ -77,9 +77,16 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 	}
 
 
-	const xmlNodePtr AlbumDescPtr = HTMLParserHelper::ToNextTag(AlbumNamePtr, "p");
+    xmlNodePtr AlbumDescPtr = HTMLParserHelper::ToNextTag(AlbumNamePtr, "p");
+    QString albumDescProperty = safeGetProp(AlbumDescPtr,"class");
+    if(albumDescProperty.contains("albuminfoAlternativeTitles"))
+    {
+        //We've found the secondary album name. Oops, move to the next p
+        AlbumDescPtr = HTMLParserHelper::ToNextTag(AlbumDescPtr, "p");
+    }
 
-	if (!AlbumDescPtr) {
+    if (!AlbumDescPtr)
+    {
 		return cleanup(false);
 	}
 	//Platforms
@@ -91,9 +98,14 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 				break;
 			}
 			if (node->type == XML_ELEMENT_NODE && node->name &&
-			    xmlStrEqual(node->name, (const xmlChar *) "a") && node->children) {
-				newAlbum->addPlatform(safeGetContent(node->children));
-			}
+                xmlStrEqual(node->name, (const xmlChar *) "a") && node->children)
+            {
+                QString newPlatform = safeGetContent(node->children);
+                if(!newAlbum->platforms().contains(newPlatform))
+                {
+                    newAlbum->addPlatform(newPlatform);
+                }
+            }
 		}
 	}
 	if ((Start = HTMLParserHelper::SkipTo("Year:", AlbumDescPtr->children))) {
@@ -103,7 +115,6 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 			newAlbum->setYear(safeGetContent(Start->children));
 		}
 	}
-
 
 	// Publisher
 	if ((Start = HTMLParserHelper::SkipTo("Published by:", AlbumDescPtr->children))) {
@@ -120,7 +131,23 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 		}
 	}
 
-	//Publisher
+    // Developer
+    if ((Start = HTMLParserHelper::SkipTo("Developed by:", AlbumDescPtr->children))) {
+        for (xmlNode *node = Start; node; node = node->next) {
+            if (node->name && xmlStrEqual(node->name, (const xmlChar *) "br")) {
+                Start = node;
+                break;
+            }
+            if (node->type == XML_ELEMENT_NODE && node->name &&
+                xmlStrEqual(node->name, (const xmlChar *) "a") && node->children) {
+                newAlbum->setDeveloper(safeGetContent(node->children));
+                break;
+            }
+        }
+    }
+
+
+    //Album Type
 	if ((Start = HTMLParserHelper::SkipTo("Album type:", AlbumDescPtr->children))) {
 		Start = Start->next;
 		if (Start && Start->type == XML_ELEMENT_NODE && Start->name &&
@@ -128,6 +155,7 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 			newAlbum->setType(safeGetContent(Start->children));
 		}
 	}
+
 	xmlNodePtr ImageTable = HTMLParserHelper::ToNextTag(AlbumNamePtr, "table");
 	int depth = 0;
 

@@ -44,9 +44,11 @@ public:
 
         add("Name", m_currentAlbum->name());
         add("Platforms", m_currentAlbum->platforms().join(", "));
-        add("Type", m_currentAlbum->type());
         add("Year", m_currentAlbum->year());
+        add("Developer", m_currentAlbum->developer());
         add("Publisher", m_currentAlbum->publisher());
+        add("Type", m_currentAlbum->type());
+
         return list;
     }
 
