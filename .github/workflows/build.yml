@@ -193,6 +193,7 @@ jobs:
           version: '6.8.3'
           target: 'desktop'
           dir: '${{ runner.temp }}/qt'
+          modules: 'qt5compat qtshadertools'
 
       - name: Cache CMake dependencies
         uses: actions/cache@v4
