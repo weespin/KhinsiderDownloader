@@ -56,7 +56,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add APP_VERSION
           git add resource.rc
-          git commit -m "ci: bump APP_VERSION"
+          git commit -m "ci: bump version"
           git push
 
       - name: Get Version
@@ -69,7 +69,7 @@ jobs:
         run: |
           MESSAGE=$(git log -1 --pretty=%B)
 
-          if echo "$MESSAGE" | grep -q "\[skip-ci\]"; then
+          if echo "$MESSAGE" | grep -qE "\[skip-ci\]|\[no-ci\]"; then
             echo "run_linux=false" >> $GITHUB_OUTPUT
             echo "run_windows=false" >> $GITHUB_OUTPUT
           else
