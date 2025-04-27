@@ -28,7 +28,7 @@ public:
     static bool ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Album> Out);
 
     static bool ParseSearchResults(htmlDocPtr Document,  QVector<QSharedPointer<Album>>& Out);
-	static bool ParsePlaylist(htmlDocPtr Document,  QVector<QSharedPointer<Album>>& Out);
+    static bool ParsePlaylist(htmlDocPtr Document,QSharedPointer<Album> Out);
 	static bool ParseDownloadLink(htmlDocPtr Document, QSharedPointer<Song> Out);
 };
 

@@ -397,7 +397,7 @@ bool KhinsiderParser::ParseSearchResults(htmlDocPtr Document, QVector<QSharedPoi
 	return cleanup(true);
 }
 
-bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document, QVector<QSharedPointer<Album>>& Out)
+bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document,QSharedPointer<Album> newAlbum)
 {
 	//don't forget to clean contexts!
 	const xmlXPathContextPtr PathContextPtr = xmlXPathNewContext(Document);
@@ -423,8 +423,6 @@ bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document, QVector<QSharedPointer<
 
 	xmlXPathFreeObject(xpathObj);
 
-	QSharedPointer<Album> newAlbum = QSharedPointer<Album>::create();
-
 	xmlNodePtr AlbumNamePtr = HTMLParserHelper::TraverseNext(Page, 2);
 	if (AlbumNamePtr) {
 		newAlbum->setName(safeGetContent(AlbumNamePtr->children));
@@ -439,16 +437,14 @@ bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document, QVector<QSharedPointer<
 
 	if (!songList || !songList->nodesetval || songList->nodesetval->nodeNr < 1)
 	{
-		if (songList) xmlXPathFreeObject(songList);
-		Out.emplace_back(newAlbum);
+        if (songList) xmlXPathFreeObject(songList);
 		return cleanup(true); // Still return true as we may have partial album info
 	}
 	//SONG HEADER
 	const xmlNodePtr tableNode = songList->nodesetval->nodeTab[0];
 	if (!tableNode || !tableNode->children)
 	{
-		xmlXPathFreeObject(songList);
-		Out.emplace_back(newAlbum);
+        xmlXPathFreeObject(songList);
 		return cleanup(true);
 	}
 
@@ -460,8 +456,7 @@ bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document, QVector<QSharedPointer<
 	const xmlNodePtr SongListHeaderPtr = tableNode->children->next->children;
 	if (!SongListHeaderPtr)
 	{
-		xmlXPathFreeObject(songList);
-		Out.emplace_back(newAlbum);
+        xmlXPathFreeObject(songList);
 		return cleanup(true);
 	}
 
@@ -482,8 +477,7 @@ bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document, QVector<QSharedPointer<
 	}
 
 	if (!SongNameHeaderPtr) {
-		xmlXPathFreeObject(songList);
-		Out.emplace_back(newAlbum);
+        xmlXPathFreeObject(songList);
 		return cleanup(true);
 	}
 
@@ -491,8 +485,7 @@ bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document, QVector<QSharedPointer<
 	const xmlNodePtr SongListPtr = HTMLParserHelper::TraverseNext(tableNode->children, 3);
 
 	if (!SongListPtr) {
-		xmlXPathFreeObject(songList);
-		Out.emplace_back(newAlbum);
+        xmlXPathFreeObject(songList);
 		return cleanup(true);
 	}
 
@@ -542,8 +535,7 @@ bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document, QVector<QSharedPointer<
 		}
 		newAlbum->addSong(newSong);
 
-	}
-	Out.emplace_back(newAlbum);
+    }
 	return cleanup(true);
 }
 
