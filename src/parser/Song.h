@@ -7,8 +7,7 @@
 #include <QMap>
 
 
-class Song : public QObject
-{
+class Song : public QObject {
     Q_OBJECT
 
     // Group related properties with a single NOTIFY signal
@@ -27,7 +26,8 @@ class Song : public QObject
 
 
 public:
-    explicit Song(QObject *parent = nullptr) : QObject(parent) {}
+    explicit Song(QObject *parent = nullptr) : QObject(parent) {
+    }
 
     // Data accessors
     QString name() const { return QString::fromStdString(m_name); }
@@ -50,6 +50,7 @@ public:
     void cancel() {
         emit wantToCancel();
     }
+
     void setName(const QString &name) {
         if (m_name != name.toStdString()) {
             m_name = name.toStdString();
@@ -71,7 +72,7 @@ public:
         }
     }
 
-    void addSize(const QString& format, unsigned long size) {
+    void addSize(const QString &format, unsigned long size) {
         m_size[format] = size;
         emit dataChanged();
     }
@@ -135,8 +136,8 @@ public:
 
 signals:
     // Reduced to just 3 signals instead of many individual ones
-    void dataChanged();          // For metadata changes
-    void stateChanged();         // For state changes
+    void dataChanged(); // For metadata changes
+    void stateChanged(); // For state changes
     void downloadProgressChanged(); // For download progress updates
     void wantToCancel();
 
@@ -159,7 +160,6 @@ private:
     QString m_activeDownloadLink;
     QString m_activeDownloadPath;
 };
-
 
 
 #endif //SONG_H

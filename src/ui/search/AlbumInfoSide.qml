@@ -22,6 +22,7 @@ Rectangle {
             height: parent.height * 0.4
         }
 
+
         // Center - Scrollable album info
         WScrollView {
             Layout.fillWidth: true
@@ -37,7 +38,7 @@ Rectangle {
                 spacing: 5
 
                 Repeater {
-                    model: appController.albumInfoVM.filteredAlbumFields
+                    model: app.searchController.albumInfoVM.filteredAlbumFields
                     Text {
                         color: "#ffffff"
                         text: modelData.label + ": " + modelData.value
@@ -65,9 +66,10 @@ Rectangle {
 
                 Repeater
                 {
-                    model: appController.albumInfoVM.formats
+                    model: app.searchController.albumInfoVM.formats
                     WButton {
-                        visible: !appController.albumInfoVM.currentAlbum.isDownloading
+                        visible: !app.searchController.albumInfoVM.isDownloading
+
                         width: parent.width * 0.6
                         anchors.horizontalCenter: parent.horizontalCenter
                         label: "Add " + modelData
@@ -83,7 +85,7 @@ Rectangle {
                         }
                         onClicked:
                         {
-                            appController.albumInfoVM.requestDownload(modelData);
+                            app.searchController.albumInfoVM.requestDownload(modelData);
                         }
                     }
                 }

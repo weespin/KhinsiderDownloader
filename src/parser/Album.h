@@ -6,8 +6,8 @@
 #include <qset.h>
 #include "KhinsiderParser.h"
 #include "Song.h"
-class Album : public QObject
-{
+
+class Album : public QObject {
     Q_OBJECT
 
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY metadataChanged)
@@ -28,7 +28,8 @@ class Album : public QObject
     Q_PROPERTY(QString state READ state NOTIFY stateChanged)
 
 public:
-    explicit Album(QObject *parent = nullptr) : QObject(parent) {}
+    explicit Album(QObject *parent = nullptr) : QObject(parent) {
+    }
 
     QString name() const { return QString::fromStdString(m_name); }
     QString type() const { return QString::fromStdString(m_type); }
@@ -40,16 +41,16 @@ public:
     QVector<QString> platforms() const { return m_platforms; }
     QVector<QString> formats() const { return m_formats; }
 
-    QVector<QSharedPointer<Song>> songs() const { return m_songs; }
+    QVector<QSharedPointer<Song> > songs() const { return m_songs; }
 
     bool isInfoParsed() const { return m_isInfoParsed; }
     bool isDownloading() const { return m_isDownloading; }
     bool hasErrors() const { return m_hasErrors; }
     DownloadQuality downloadQuality() const { return m_downloadQuality; }
+
     void resetState();
 
     QString state() const {
-
         if (m_hasErrors) {
             return "errored";
         }
@@ -68,7 +69,7 @@ public:
 
     int downloadedSize() const {
         int totaldownloadedSize = 0;
-        for (const auto& song : m_songs) {
+        for (const auto &song: m_songs) {
             totaldownloadedSize += song->downloadedSize();
         }
         return totaldownloadedSize;
@@ -76,9 +77,8 @@ public:
 
     int downloadSpeed() const {
         int totaldownloadSpeed = 0;
-        for (const auto& song : m_songs) {
-            if (!song->downloaded())
-            {
+        for (const auto &song: m_songs) {
+            if (!song->downloaded()) {
                 totaldownloadSpeed += song->downloadSpeed();
             }
         }
@@ -87,7 +87,7 @@ public:
 
     int downloadedSongs() const {
         int totaldownloadedSongs = 0;
-        for (const auto& song : m_songs) {
+        for (const auto &song: m_songs) {
             if (song->downloaded()) {
                 totaldownloadedSongs++;
             }
@@ -149,7 +149,7 @@ public:
         }
     }
 
-    void addAlbumImage(const QString& albumImage) {
+    void addAlbumImage(const QString &albumImage) {
         m_albumImage.insert(albumImage);
         emit metadataChanged();
     }
@@ -161,7 +161,7 @@ public:
         }
     }
 
-    void addPlatform(const QString& platform) {
+    void addPlatform(const QString &platform) {
         m_platforms.push_back(platform);
         emit metadataChanged();
     }
@@ -173,20 +173,20 @@ public:
         }
     }
 
-    void addFormat(const QString& format) {
+    void addFormat(const QString &format) {
         m_formats.push_back(format);
         emit metadataChanged();
     }
 
-    void setSongs(const QVector<QSharedPointer<Song>> &songs) {
+    void setSongs(const QVector<QSharedPointer<Song> > &songs) {
         // Disconnect old songs
-        for (const auto& song : m_songs) {
+        for (const auto &song: m_songs) {
             disconnectSong(song);
         }
 
         m_songs = songs;
 
-        for (const auto& song : m_songs) {
+        for (const auto &song: m_songs) {
             connectSong(song);
         }
 
@@ -228,10 +228,10 @@ public:
     }
 
 signals:
-    void metadataChanged();  // For album metadata changes
-    void contentChanged();   // For song list changes
-    void stateChanged();     // For state changes
-    void progressUpdated();  // For download progress updates
+    void metadataChanged(); // For album metadata changes
+    void contentChanged(); // For song list changes
+    void stateChanged(); // For state changes
+    void progressUpdated(); // For download progress updates
 
 public slots:
     void onSongDataChanged() {
@@ -239,21 +239,19 @@ public slots:
     }
 
 private:
-
-    void connectSong(const QSharedPointer<Song>& song) {
+    void connectSong(const QSharedPointer<Song> &song) {
         connect(song.data(), &Song::dataChanged, this, &Album::onSongDataChanged);
         connect(song.data(), &Song::stateChanged, this, &Album::onSongDataChanged);
         connect(song.data(), &Song::downloadProgressChanged, this, &Album::onSongDataChanged);
     }
 
-    void disconnectSong(const QSharedPointer<Song>& song) {
+    void disconnectSong(const QSharedPointer<Song> &song) {
         disconnect(song.data(), &Song::dataChanged, this, &Album::onSongDataChanged);
         disconnect(song.data(), &Song::stateChanged, this, &Album::onSongDataChanged);
         disconnect(song.data(), &Song::downloadProgressChanged, this, &Album::onSongDataChanged);
     }
 
 private:
-
     std::string m_name;
     std::string m_type;
     std::string m_year;
@@ -264,7 +262,7 @@ private:
     QVector<QString> m_platforms;
     QVector<QString> m_formats;
 
-    QVector<QSharedPointer<Song>> m_songs;
+    QVector<QSharedPointer<Song> > m_songs;
     //States
     bool m_isInfoParsed = false;
     bool m_isDownloading = false;

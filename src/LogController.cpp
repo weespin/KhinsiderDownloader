@@ -4,15 +4,14 @@
 #include <QDir>
 #include <QDebug>
 #include <QDesktopServices>
-LogController& LogController::instance()
-{
+
+LogController &LogController::instance() {
     static LogController instance;
     return instance;
 }
 
-LogController::LogController(QObject* parent)
-    : QObject(parent)
-{
+LogController::LogController(QObject *parent)
+    : QObject(parent) {
     const QString logDirectory = logDir();
     QDir().mkpath(logDirectory);
 
@@ -21,31 +20,34 @@ LogController::LogController(QObject* parent)
     m_stream.setDevice(&m_logFile);
 }
 
-LogController::~LogController()
-{
+LogController::~LogController() {
     m_logFile.close();
 }
 
-void LogController::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
-{
+void LogController::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
     QString level;
     switch (type) {
-    case QtDebugMsg:    level = "DEBUG"; break;
-    case QtInfoMsg:     level = "INFO"; break;
-    case QtWarningMsg:  level = "WARNING"; break;
-    case QtCriticalMsg: level = "CRITICAL"; break;
-    case QtFatalMsg:    level = "FATAL"; break;
+        case QtDebugMsg: level = "DEBUG";
+            break;
+        case QtInfoMsg: level = "INFO";
+            break;
+        case QtWarningMsg: level = "WARNING";
+            break;
+        case QtCriticalMsg: level = "CRITICAL";
+            break;
+        case QtFatalMsg: level = "FATAL";
+            break;
     }
 
     QString logMsg = QString("[%1] %2: %3 (%4:%5, %6)\n")
-                         .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz"))
-                         .arg(level)
-                         .arg(msg)
-                         .arg(context.file)
-                         .arg(context.line)
-                         .arg(context.function);
+            .arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz"))
+            .arg(level)
+            .arg(msg)
+            .arg(context.file)
+            .arg(context.line)
+            .arg(context.function);
 
-    if ( m_settings && !m_settings->suppressLogs() && m_logFile.isOpen()) {
+    if (m_settings && !m_settings->suppressLogs() && m_logFile.isOpen()) {
         m_stream << logMsg << Qt::flush;
     }
 #ifdef QT_DEBUG
@@ -53,8 +55,7 @@ void LogController::messageHandler(QtMsgType type, const QMessageLogContext &con
 #endif
 }
 
-QString LogController::logPath() const
-{
+QString LogController::logPath() const {
     return m_logFile.fileName();
 }
 

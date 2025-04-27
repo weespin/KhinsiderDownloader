@@ -29,7 +29,7 @@ Rectangle
                      Repeater
                      {
                             height:parent.height
-                            model: appController.downloaderModel
+                            model: app.downloaderController.downloaderVM
                             width : parent.width
                             delegate: AlbumItem
                              {
@@ -42,11 +42,11 @@ Rectangle
                                     totalSongs: model.totalSongs
                                     speedInBytes: model.speed;
                                     onCancelRequested: {
-                                            appController.downloaderModel.cancelAlbum(model.index)
+                                            app.downloaderController.downloaderVM.cancelAlbum(model.index)
                                         }
                                     onRetryRequested :
                                     {
-                                           appController.downloaderModel.retryAlbum(model.index);
+                                           app.downloaderController.downloaderVM.retryAlbum(model.index);
                                     }
                              }
                      }
@@ -86,9 +86,9 @@ Rectangle
                          }
                      }
                      Connections {
-                            target: appController.downloaderModel
+                            target: app.downloaderController.downloaderVM
                             function onTotalsChanged() {
-                                speedText.text = speedText.formatSpeed(appController.downloaderModel.totalSpeed());
+                                speedText.text = speedText.formatSpeed(app.downloaderController.downloaderVM.totalSpeed());
                             }
                         }
               }
@@ -103,10 +103,10 @@ Rectangle
                      horizontalAlignment: Text.AlignHCenter
                      verticalAlignment: Text.AlignVCenter
                      Connections {
-                            target: appController.downloaderModel
+                            target: app.downloaderController.downloaderVM
                             function onTotalsChanged() {
-                                downloadedSizeText.text = appController.downloaderModel.totalDownloadedSongs()
-                                    + "/" + appController.downloaderModel.totalSongs();
+                                downloadedSizeText.text = app.downloaderController.downloaderVM.totalDownloadedSongs()
+                                    + "/" + app.downloaderController.downloaderVM.totalDownloadedSongs();
                             }
                         }
               }

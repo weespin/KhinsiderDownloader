@@ -1,7 +1,7 @@
 #ifndef SEARCHALBUMINFOVIEWMODEL_H
 #define SEARCHALBUMINFOVIEWMODEL_H
 #include <QObject>
-#include "SearchResultModel.h"
+#include "Album.h"
 
 class SearchAlbumInfoViewModel : public QObject {
     Q_OBJECT
@@ -9,16 +9,19 @@ class SearchAlbumInfoViewModel : public QObject {
     Q_PROPERTY(QStringList albumImages READ albumImages NOTIFY currentAlbumChanged)
     Q_PROPERTY(QVariantList filteredAlbumFields READ filteredAlbumFields NOTIFY currentAlbumChanged)
     Q_PROPERTY(QVariantList formats READ formats NOTIFY currentAlbumChanged)
+    Q_PROPERTY(int selectedIndex READ selectedIndex NOTIFY selectedIndexChanged)
+
 public:
     explicit SearchAlbumInfoViewModel(QObject *parent = nullptr) : QObject(parent) {
     }
 
-    QVariantList formats() const
-    {
+    int selectedIndex() { return m_selectedIndex; }
+
+    QVariantList formats() const {
         QVariantList list;
         if (!m_currentAlbum)
             return list;
-        for (const QString& format : m_currentAlbum->formats()) {
+        for (const QString &format: m_currentAlbum->formats()) {
             list.append(format);
         }
 
@@ -30,8 +33,7 @@ public:
         if (!m_currentAlbum)
             return list;
 
-        auto add = [&](const QString &label, const QString &value)
-        {
+        auto add = [&](const QString &label, const QString &value) {
             if (!value.trimmed().isEmpty()) {
                 QVariantMap item;
                 item["label"] = label;
@@ -59,7 +61,10 @@ public:
 
 signals:
     void currentAlbumChanged();
+
     void downloadRequested(QSharedPointer<Album> album, DownloadQuality quality);
+
+    void selectedIndexChanged();
 
 public slots:
     void setCurrentAlbum(QSharedPointer<Album> album) {
@@ -72,20 +77,20 @@ public slots:
     void onFullFetch() {
         emit currentAlbumChanged();
     }
-    void requestDownload(const QString& index)
-    {
+
+    void requestDownload(const QString &index) {
         DownloadQuality quality = DownloadQuality::UNKNOWN;
         if (index == "MP3") {
             quality = DownloadQuality::MP3;
-        }
-        else {
+        } else {
             quality = DownloadQuality::BEST;
         }
-        emit downloadRequested(m_currentAlbumPtr, quality );
+        emit downloadRequested(m_currentAlbumPtr, quality);
     }
 
 private:
     Album *m_currentAlbum = nullptr; //TODO: well...
     QSharedPointer<Album> m_currentAlbumPtr;
+    int m_selectedIndex = -1;
 };
 #endif //SEARCHALBUMINFOVIEWMODEL_H

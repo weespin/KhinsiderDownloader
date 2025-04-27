@@ -10,7 +10,7 @@ Item {
         root.selectedIndex = -1;
     }
 
-    property int selectedIndex: appController.searchVM.selectedIndex
+    property int selectedIndex: app.searchController.searchResultVM.selectedIndex
     property bool isSearching: false
 
     height: 600
@@ -29,7 +29,7 @@ Item {
             width: root.width
 
             Repeater {
-                model: appController.searchVM.searchResult
+                model: app.searchController.searchResultVM
 
                 Rectangle {
                     id: rectangle
@@ -77,7 +77,7 @@ Item {
                             }
                             rectangle.anchors.horizontalCenter = undefined;
                             root.selectedIndex = index;
-                            appController.searchVM.setSelectedIndex(index);
+                            app.searchController.searchResultVM.setSelectedIndex(index);
                         }
                         onEntered: {
                             if (!isSelected) {
@@ -110,15 +110,15 @@ Item {
         }
     }
     Connections {
-           target: appController.searchVM
-           function onPerformSearch() {
+           target: app.searchController.searchResultVM
+           function onSearchStarted() {
                root.hideAllResults();
            }
        }
 
        Connections {
-           target: appController.searchVM
-           function onSearchResultChanged() {
+           target: app.searchController.searchResultVM
+           function onSearchCompleted() {
                root.isSearching = false;
            }
        }

@@ -58,7 +58,7 @@ qt_add_executable(appKhinsiderQT
         src/pages/search/SearchAlbumInfoViewModel.h
         src/ImagePrecache.cpp
         src/ImagePrecache.h
-        src/maincontroller.cpp
+        src/App.cpp
         ${RESOURCE_SRCS}
         src/pages/settings/SettingsController.cpp
         src/pages/settings/SettingsController.h
@@ -72,14 +72,12 @@ qt_add_executable(appKhinsiderQT
         src/pages/download/DownloaderController.cpp
         src/pages/download/DownloaderController.h
         src/pages/download/DownloaderModel.h
-        src/main.h
         src/downloader/WDownloadReply.h
         src/pages/download/DownloaderModel.cpp
         src/parser/Song.h
         src/parser/Album.cpp
         src/parser/Album.h
 		${app_icon_resource_windows}
-        src/pages/search/SearchViewModel.cpp
 		src/pages/about/aboutcontroller.h 
 		src/pages/about/aboutcontroller.cpp
         src/LogController.cpp
@@ -122,11 +120,13 @@ qt_add_qml_module(appKhinsiderQT
 
         # About
         src/ui/about/AboutPanel.qml
+        src/ui/about/UpdateCheckerDialog.qml
 
         # Settings components
         src/ui/settings/SettingsPanel.qml
-        src/ui/settings/UpdateCheckerDialog.qml
+
         RESOURCES resources.qrc
+
 )
 
 set_target_properties(appKhinsiderQT PROPERTIES

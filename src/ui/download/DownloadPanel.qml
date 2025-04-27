@@ -119,7 +119,7 @@ Item {
                         label: "Import"
                         onClicked:
                         {
-                            appController.downloaderModel.addToDownloadList(textfield.text);
+                            app.downloaderController.downloaderVM.addToDownloadList(textfield.text);
                             textfield.text = "";
                             //mainWindow.state = (mainWindow.state === "normal") ? "expanded" : "normal"
                         }
@@ -131,7 +131,7 @@ Item {
                         Layout.alignment: Qt.AlignCenter
                         onClicked:
                         {
-                            appController.downloaderModel.cancelAllDownloads();
+                            app.downloaderController.downloaderVM.cancelAllDownloads();
                         }
                         label: "Cancel All"
                     }

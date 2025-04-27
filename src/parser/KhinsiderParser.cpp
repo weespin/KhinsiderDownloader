@@ -8,35 +8,32 @@
 #include <libxml/xpath.h>
 
 // wellcome to hell
-auto safeGetContent = [](xmlNodePtr node) -> QString
-{
+auto safeGetContent = [](xmlNodePtr node) -> QString {
 	if (!node) return QString();
-	xmlChar* content = xmlNodeGetContent(node);
+	xmlChar *content = xmlNodeGetContent(node);
 	if (!content) return QString();
-	QString result = QString::fromUtf8(reinterpret_cast<const char*>(content));
+	QString result = QString::fromUtf8(reinterpret_cast<const char *>(content));
 	xmlFree(content);
 	return result;
 };
 
 
-auto safeGetProp = [](xmlNodePtr node, const char* propName) -> QString
-{
+auto safeGetProp = [](xmlNodePtr node, const char *propName) -> QString {
 	if (!node) return QString();
 
-	xmlChar* prop = xmlGetProp(node, reinterpret_cast<const xmlChar*>(propName));
+	xmlChar *prop = xmlGetProp(node, reinterpret_cast<const xmlChar *>(propName));
 	if (!prop) return QString();
 
 	size_t propLen = xmlStrlen(prop);
 
-	QString result = QString::fromUtf8(reinterpret_cast<const char*>(prop), static_cast<int>(propLen));
+	QString result = QString::fromUtf8(reinterpret_cast<const char *>(prop), static_cast<int>(propLen));
 	int newsize = result.size();
 	xmlFree(prop);
 
 	return result;
 };
 
-bool KhinsiderParser::ParseAlbumPage(htmlDocPtr Document, QVector<QSharedPointer<Album>>& Out)
-{
+bool KhinsiderParser::ParseAlbumPage(htmlDocPtr Document, QVector<QSharedPointer<Album> > &Out) {
 	QSharedPointer<Album> Album;
 	bool bResult = ParseAlbumFullData(Document, Album);
 	if (!bResult) {
@@ -45,20 +42,19 @@ bool KhinsiderParser::ParseAlbumPage(htmlDocPtr Document, QVector<QSharedPointer
 	Out.push_back(Album);
 	return true;
 }
-bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Album> Out)
-{
 
+bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Album> Out) {
 	//don't forget to clean contexts!
 	const xmlXPathContextPtr PathContextPtr = xmlXPathNewContext(Document);
 
 	auto cleanup = [&](bool success) {
 		xmlXPathFreeContext(PathContextPtr);
 		return success;
-		};
+	};
 
 	//Parse AlbumInfo
 	const xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(
-		reinterpret_cast<const xmlChar*>("//div[@id='pageContent']"), PathContextPtr);
+		reinterpret_cast<const xmlChar *>("//div[@id='pageContent']"), PathContextPtr);
 
 	if (!xpathObj || !xpathObj->nodesetval || xpathObj->nodesetval->nodeNr < 1) {
 		if (xpathObj) xmlXPathFreeObject(xpathObj);
@@ -89,44 +85,35 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 	//Platforms
 	xmlNodePtr Start = AlbumDescPtr->children;
 
-	if ((Start = HTMLParserHelper::SkipTo("Platforms:", AlbumDescPtr->children)))
-	{
-		for (xmlNode* node = Start; node; node = node->next)
-		{
-			if (node->name && xmlStrEqual(node->name, (const xmlChar*)"br"))
-			{
+	if ((Start = HTMLParserHelper::SkipTo("Platforms:", AlbumDescPtr->children))) {
+		for (xmlNode *node = Start; node; node = node->next) {
+			if (node->name && xmlStrEqual(node->name, (const xmlChar *) "br")) {
 				break;
 			}
 			if (node->type == XML_ELEMENT_NODE && node->name &&
-				xmlStrEqual(node->name, (const xmlChar*)"a") && node->children)
-			{
+			    xmlStrEqual(node->name, (const xmlChar *) "a") && node->children) {
 				newAlbum->addPlatform(safeGetContent(node->children));
 			}
 		}
 	}
-	if ((Start = HTMLParserHelper::SkipTo("Year:", AlbumDescPtr->children)))
-	{
+	if ((Start = HTMLParserHelper::SkipTo("Year:", AlbumDescPtr->children))) {
 		Start = Start->next;
 		if (Start && Start->type == XML_ELEMENT_NODE && Start->name &&
-			xmlStrEqual(Start->name, (const xmlChar*)"b") && Start->children) {
+		    xmlStrEqual(Start->name, (const xmlChar *) "b") && Start->children) {
 			newAlbum->setYear(safeGetContent(Start->children));
 		}
 	}
 
 
 	// Publisher
-	if ((Start = HTMLParserHelper::SkipTo("Published by:", AlbumDescPtr->children)))
-	{
-		for (xmlNode* node = Start; node; node = node->next)
-		{
-			if (node->name && xmlStrEqual(node->name, (const xmlChar*)"br"))
-			{
+	if ((Start = HTMLParserHelper::SkipTo("Published by:", AlbumDescPtr->children))) {
+		for (xmlNode *node = Start; node; node = node->next) {
+			if (node->name && xmlStrEqual(node->name, (const xmlChar *) "br")) {
 				Start = node;
 				break;
 			}
 			if (node->type == XML_ELEMENT_NODE && node->name &&
-				xmlStrEqual(node->name, (const xmlChar*)"a") && node->children)
-			{
+			    xmlStrEqual(node->name, (const xmlChar *) "a") && node->children) {
 				newAlbum->setPublisher(safeGetContent(node->children));
 				break;
 			}
@@ -134,33 +121,28 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 	}
 
 	//Publisher
-	if ((Start = HTMLParserHelper::SkipTo("Album type:", AlbumDescPtr->children)))
-	{
+	if ((Start = HTMLParserHelper::SkipTo("Album type:", AlbumDescPtr->children))) {
 		Start = Start->next;
 		if (Start && Start->type == XML_ELEMENT_NODE && Start->name &&
-			xmlStrEqual(Start->name, (const xmlChar*)"b") && Start->children) {
+		    xmlStrEqual(Start->name, (const xmlChar *) "b") && Start->children) {
 			newAlbum->setType(safeGetContent(Start->children));
 		}
 	}
 	xmlNodePtr ImageTable = HTMLParserHelper::ToNextTag(AlbumNamePtr, "table");
 	int depth = 0;
 
-	while (ImageTable && ImageTable->children && depth < 3)
-	{
+	while (ImageTable && ImageTable->children && depth < 3) {
 		ImageTable = ImageTable->children;
 		++depth;
 	}
 
-	if (ImageTable)
-	{
+	if (ImageTable) {
 		ImageTable = ImageTable->next;
 		newAlbum->setAlbumImage(QSet<QString>());
 	}
-	for (xmlNodePtr imageTableNode = ImageTable; imageTableNode; imageTableNode = imageTableNode->next)
-	{
-		QString className = safeGetProp(imageTableNode,"class");
-		if (!imageTableNode->children || !imageTableNode->children->next || !className.contains("albumImage"))
-		{
+	for (xmlNodePtr imageTableNode = ImageTable; imageTableNode; imageTableNode = imageTableNode->next) {
+		QString className = safeGetProp(imageTableNode, "class");
+		if (!imageTableNode->children || !imageTableNode->children->next || !className.contains("albumImage")) {
 			continue;
 		}
 		xmlNodePtr trueImageNode = imageTableNode->children->next;
@@ -170,31 +152,27 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 	///////////
 	//SONG LIST
 	const xmlXPathObjectPtr songList = xmlXPathEvalExpression(
-		reinterpret_cast<const xmlChar*>("//table[@id='songlist']"), PathContextPtr);
+		reinterpret_cast<const xmlChar *>("//table[@id='songlist']"), PathContextPtr);
 
-	if (!songList || !songList->nodesetval || songList->nodesetval->nodeNr < 1)
-	{
+	if (!songList || !songList->nodesetval || songList->nodesetval->nodeNr < 1) {
 		if (songList) xmlXPathFreeObject(songList);
 
 		return cleanup(true);
 	}
 	//SONG HEADER
 	const xmlNodePtr tableNode = songList->nodesetval->nodeTab[0];
-	if (!tableNode || !tableNode->children)
-	{
+	if (!tableNode || !tableNode->children) {
 		xmlXPathFreeObject(songList);
 
 		return cleanup(true);
 	}
 
-	if(!tableNode->children->next)
-	{
+	if (!tableNode->children->next) {
 		cleanup(false);
 	}
 
 	const xmlNodePtr SongListHeaderPtr = tableNode->children->next->children;
-	if (!SongListHeaderPtr)
-	{
+	if (!SongListHeaderPtr) {
 		xmlXPathFreeObject(songList);
 
 		return cleanup(true);
@@ -202,13 +180,11 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 
 	int nSongNameIndex = 0;
 	xmlNodePtr SongNameHeaderPtr = nullptr;
-	for (xmlNodePtr snamenode = SongListHeaderPtr; snamenode; snamenode = snamenode->next)
-	{
-		if (snamenode->children && snamenode->children->children && snamenode->children->children->type == XML_TEXT_NODE)
-		{
+	for (xmlNodePtr snamenode = SongListHeaderPtr; snamenode; snamenode = snamenode->next) {
+		if (snamenode->children && snamenode->children->children && snamenode->children->children->type ==
+		    XML_TEXT_NODE) {
 			QString content = safeGetContent(snamenode->children->children);
-			if (content.contains("Song Name"))
-			{
+			if (content.contains("Song Name")) {
 				SongNameHeaderPtr = snamenode;
 				break;
 			}
@@ -226,21 +202,19 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 	int nNodes = HTMLParserHelper::GetNextCount(SongNameHeaderPtr);
 	int nFormats = (1 + (nNodes - 6)) / 2;
 
-	for (int nFormat = 0; nFormat < nFormats; ++nFormat)
-	{
-		const xmlNodePtr SongFormatNode = HTMLParserHelper::TraverseNext(SongListHeaderPtr, nSongNameIndex + 2 + (nFormat * 2));
-		if (SongFormatNode && SongFormatNode->children && SongFormatNode->children->children)
-		{
+	for (int nFormat = 0; nFormat < nFormats; ++nFormat) {
+		const xmlNodePtr SongFormatNode = HTMLParserHelper::TraverseNext(
+			SongListHeaderPtr, nSongNameIndex + 2 + (nFormat * 2));
+		if (SongFormatNode && SongFormatNode->children && SongFormatNode->children->children) {
 			QString formatName = safeGetContent(SongFormatNode->children->children);
-			if (formatName.size())
-			{
+			if (formatName.size()) {
 				newAlbum->addFormat(formatName);
 			}
 		}
 	}
 
 	//SONG HEADER END
-	const xmlNodePtr SongListPtr = HTMLParserHelper::TraverseNext(tableNode->children,3);
+	const xmlNodePtr SongListPtr = HTMLParserHelper::TraverseNext(tableNode->children, 3);
 
 	if (!SongListPtr) {
 		xmlXPathFreeObject(songList);
@@ -248,8 +222,7 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 		return cleanup(true);
 	}
 
-	for (xmlNodePtr node = SongListPtr; node; node = node->next)
-	{
+	for (xmlNodePtr node = SongListPtr; node; node = node->next) {
 		QString NodeId = safeGetProp(node, "id");
 		if (NodeId.size() && NodeId.contains("songlist_footer")) {
 			break;
@@ -257,67 +230,55 @@ bool KhinsiderParser::ParseAlbumFullData(htmlDocPtr Document, QSharedPointer<Alb
 
 		QSharedPointer<Song> newSong = QSharedPointer<Song>::create();
 		const xmlNodePtr songRow = node->children;
-		if (!songRow)
-		{
+		if (!songRow) {
 			continue;
 		}
 
 		const xmlNodePtr SongNameRowPTR = HTMLParserHelper::TraverseNext(songRow, nSongNameIndex);
-		if (SongNameRowPTR && SongNameRowPTR->children)
-		{
+		if (SongNameRowPTR && SongNameRowPTR->children) {
 			newSong->setSongLink(safeGetProp(SongNameRowPTR->children, "href"));
 
-			if (SongNameRowPTR->children->children)
-			{
+			if (SongNameRowPTR->children->children) {
 				newSong->setName(safeGetContent(SongNameRowPTR->children->children));
 			}
 		}
 		const xmlNodePtr SongLength = HTMLParserHelper::TraverseNext(SongNameRowPTR, 2);
 
-		if (SongLength && SongLength->children && SongLength->children->children)
-		{
+		if (SongLength && SongLength->children && SongLength->children->children) {
 			QString lengthStr = safeGetContent(SongLength->children->children);
-			if (lengthStr.size())
-			{
+			if (lengthStr.size()) {
 				newSong->setLengthInSeconds(HTMLParserHelper::convertToSeconds(lengthStr));
 			}
 		}
-		for (int nFormat = 0; nFormat < nFormats && nFormat < newAlbum->formats().size(); ++nFormat)
-		{
+		for (int nFormat = 0; nFormat < nFormats && nFormat < newAlbum->formats().size(); ++nFormat) {
 			const xmlNodePtr SongFormat = HTMLParserHelper::TraverseNext(SongLength, 2 + (nFormat * 2));
-			if (SongFormat && SongFormat->children && SongFormat->children->children)
-			{
+			if (SongFormat && SongFormat->children && SongFormat->children->children) {
 				QString sizeStr = safeGetContent(SongFormat->children->children);
-				if (!sizeStr.size())
-				{
-					newSong->addSize(newAlbum->formats()[nFormat],HTMLParserHelper::convertToKB(sizeStr));
+				if (!sizeStr.size()) {
+					newSong->addSize(newAlbum->formats()[nFormat], HTMLParserHelper::convertToKB(sizeStr));
 				}
 			}
 		}
 		newAlbum->addSong(newSong);
-
 	}
 	Out->setIsInfoParsed(true);
 	return cleanup(true);
 }
 
-bool KhinsiderParser::ParseSearchResults(htmlDocPtr Document, QVector<QSharedPointer<Album>>& Out)
-{
+bool KhinsiderParser::ParseSearchResults(htmlDocPtr Document, QVector<QSharedPointer<Album> > &Out) {
 	const xmlXPathContextPtr PathContextPtr = xmlXPathNewContext(Document);
-	if (!PathContextPtr) 
-	{
+	if (!PathContextPtr) {
 		return false;
 	}
 	auto cleanup = [&](bool success) {
 		xmlXPathFreeContext(PathContextPtr);
 		return success;
-		};
+	};
 
 	const xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(
-		reinterpret_cast<const xmlChar*>("//div[@id='pageContent']"), PathContextPtr);
+		reinterpret_cast<const xmlChar *>("//div[@id='pageContent']"), PathContextPtr);
 
-	if (!xpathObj || !xpathObj->nodesetval || xpathObj->nodesetval->nodeNr < 1) 
-	{
+	if (!xpathObj || !xpathObj->nodesetval || xpathObj->nodesetval->nodeNr < 1) {
 		if (xpathObj) xmlXPathFreeObject(xpathObj);
 		return cleanup(false);
 	}
@@ -326,46 +287,38 @@ bool KhinsiderParser::ParseSearchResults(htmlDocPtr Document, QVector<QSharedPoi
 
 	const xmlNodePtr firstChild = albumNameNode->children;
 
-	if (firstChild && xmlNodeGetContent(firstChild) != nullptr 
-		&& safeGetContent(firstChild) != "Search")
-	{
+	if (firstChild && xmlNodeGetContent(firstChild) != nullptr
+	    && safeGetContent(firstChild) != "Search") {
 		return ParseAlbumPage(Document, Out);
 	}
 
 	//Parse album list
 	const xmlXPathObjectPtr albumListObj = xmlXPathEvalExpression(
-		reinterpret_cast<const xmlChar*>("//table[@class='albumList']"), PathContextPtr);
+		reinterpret_cast<const xmlChar *>("//table[@class='albumList']"), PathContextPtr);
 
 	if (!albumListObj || !albumListObj->nodesetval || albumListObj->nodesetval->nodeNr < 1 ||
-		!albumListObj->nodesetval->nodeTab[0]->children)
-	{
+	    !albumListObj->nodesetval->nodeTab[0]->children) {
 		if (albumListObj) xmlXPathFreeObject(albumListObj);
-		return cleanup(true); 
+		return cleanup(true);
 	}
 
-	const xmlNodePtr albumListNode = HTMLParserHelper::TraverseNext(albumListObj->nodesetval->nodeTab[0]->children,3);
-	for (xmlNodePtr rowNode = albumListNode; rowNode != nullptr; rowNode = rowNode->next)
-	{
+	const xmlNodePtr albumListNode = HTMLParserHelper::TraverseNext(albumListObj->nodesetval->nodeTab[0]->children, 3);
+	for (xmlNodePtr rowNode = albumListNode; rowNode != nullptr; rowNode = rowNode->next) {
 		QSharedPointer<Album> newAlbum = QSharedPointer<Album>::create();
-		if (!rowNode->children || !rowNode->children->next)
-		{
+		if (!rowNode->children || !rowNode->children->next) {
 			continue;
 		}
 
 		const xmlNodePtr albumIcon = rowNode->children->next->children;
-		for (xmlNode* node = albumIcon->children; node; node = node->next)
-		{
-			if (node && node->type == XML_ELEMENT_NODE && xmlStrEqual(node->name, (const xmlChar*)"img"))
-			{
-				newAlbum->addAlbumImage(safeGetProp(node,"src"));
+		for (xmlNode *node = albumIcon->children; node; node = node->next) {
+			if (node && node->type == XML_ELEMENT_NODE && xmlStrEqual(node->name, (const xmlChar *) "img")) {
+				newAlbum->addAlbumImage(safeGetProp(node, "src"));
 			}
 		}
 
 		const xmlNodePtr albumDataNode = HTMLParserHelper::TraverseNext(rowNode->children, 3);
-		for (xmlNode* node = albumDataNode->children; node; node = node->next)
-		{
-			if (node && node->type == XML_ELEMENT_NODE && xmlStrEqual(node->name, (const xmlChar*)"a"))
-			{
+		for (xmlNode *node = albumDataNode->children; node; node = node->next) {
+			if (node && node->type == XML_ELEMENT_NODE && xmlStrEqual(node->name, (const xmlChar *) "a")) {
 				newAlbum->setName(safeGetContent(node));
 				newAlbum->setAlbumLink("https://downloads.khinsider.com" + safeGetProp(node, "href"));
 			}
@@ -373,23 +326,19 @@ bool KhinsiderParser::ParseSearchResults(htmlDocPtr Document, QVector<QSharedPoi
 
 
 		const xmlNodePtr albumPlatformsNode = HTMLParserHelper::TraverseNext(albumDataNode, 2); //5
-		for (xmlNode* node = albumPlatformsNode->children; node; node = node->next)
-		{
-			if (node && node->type == XML_ELEMENT_NODE && xmlStrEqual(node->name, (const xmlChar*)"a"))
-			{
+		for (xmlNode *node = albumPlatformsNode->children; node; node = node->next) {
+			if (node && node->type == XML_ELEMENT_NODE && xmlStrEqual(node->name, (const xmlChar *) "a")) {
 				newAlbum->addPlatform((safeGetContent(node)));
 			}
 		}
 
 		const xmlNodePtr albumTypeNode = HTMLParserHelper::TraverseNext(albumPlatformsNode, 2); //2
-		for (xmlNode* node = albumTypeNode->children; node; node = node->next)
-		{
+		for (xmlNode *node = albumTypeNode->children; node; node = node->next) {
 			newAlbum->setType(safeGetContent(node));
 		}
 
 		const xmlNodePtr albumYearNode = HTMLParserHelper::TraverseNext(albumTypeNode, 2); //9
-		for (xmlNode* node = albumYearNode->children; node; node = node->next)
-		{
+		for (xmlNode *node = albumYearNode->children; node; node = node->next) {
 			newAlbum->setYear(safeGetContent(node));
 		}
 		Out.emplace_back(newAlbum);
@@ -397,18 +346,17 @@ bool KhinsiderParser::ParseSearchResults(htmlDocPtr Document, QVector<QSharedPoi
 	return cleanup(true);
 }
 
-bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document,QSharedPointer<Album> newAlbum)
-{
+bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document, QSharedPointer<Album> newAlbum) {
 	//don't forget to clean contexts!
 	const xmlXPathContextPtr PathContextPtr = xmlXPathNewContext(Document);
 
 	auto cleanup = [&](bool success) {
 		xmlXPathFreeContext(PathContextPtr);
 		return success;
-		};
+	};
 
 	const xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(
-		reinterpret_cast<const xmlChar*>("//div[@id='pageContent']"), PathContextPtr);
+		reinterpret_cast<const xmlChar *>("//div[@id='pageContent']"), PathContextPtr);
 
 	if (!xpathObj || !xpathObj->nodesetval || xpathObj->nodesetval->nodeNr < 1) {
 		if (xpathObj) xmlXPathFreeObject(xpathObj);
@@ -429,45 +377,39 @@ bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document,QSharedPointer<Album> ne
 	}
 
 	newAlbum->setIsPlaylist(true);
-	
+
 	///////////
 	//SONG LIST
 	const xmlXPathObjectPtr songList = xmlXPathEvalExpression(
-		reinterpret_cast<const xmlChar*>("//table[@id='songlist']"), PathContextPtr);
+		reinterpret_cast<const xmlChar *>("//table[@id='songlist']"), PathContextPtr);
 
-	if (!songList || !songList->nodesetval || songList->nodesetval->nodeNr < 1)
-	{
-        if (songList) xmlXPathFreeObject(songList);
+	if (!songList || !songList->nodesetval || songList->nodesetval->nodeNr < 1) {
+		if (songList) xmlXPathFreeObject(songList);
 		return cleanup(true); // Still return true as we may have partial album info
 	}
 	//SONG HEADER
 	const xmlNodePtr tableNode = songList->nodesetval->nodeTab[0];
-	if (!tableNode || !tableNode->children)
-	{
-        xmlXPathFreeObject(songList);
+	if (!tableNode || !tableNode->children) {
+		xmlXPathFreeObject(songList);
 		return cleanup(true);
 	}
 
-	if (!tableNode->children->next)
-	{
+	if (!tableNode->children->next) {
 		cleanup(false);
 	}
 
 	const xmlNodePtr SongListHeaderPtr = tableNode->children->next->children;
-	if (!SongListHeaderPtr)
-	{
-        xmlXPathFreeObject(songList);
+	if (!SongListHeaderPtr) {
+		xmlXPathFreeObject(songList);
 		return cleanup(true);
 	}
 
 	int nSongNameIndex = 0;
 	xmlNodePtr SongNameHeaderPtr = nullptr;
-	for (xmlNodePtr snamenode = SongListHeaderPtr; snamenode; snamenode = snamenode->next)
-	{
-		if (snamenode->children && snamenode->children->children && snamenode->children->children->type == XML_TEXT_NODE)
-		{
-			if (safeGetContent(snamenode->children->children).contains("Song"))
-			{
+	for (xmlNodePtr snamenode = SongListHeaderPtr; snamenode; snamenode = snamenode->next) {
+		if (snamenode->children && snamenode->children->children && snamenode->children->children->type ==
+		    XML_TEXT_NODE) {
+			if (safeGetContent(snamenode->children->children).contains("Song")) {
 				SongNameHeaderPtr = snamenode;
 				break;
 			}
@@ -477,7 +419,7 @@ bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document,QSharedPointer<Album> ne
 	}
 
 	if (!SongNameHeaderPtr) {
-        xmlXPathFreeObject(songList);
+		xmlXPathFreeObject(songList);
 		return cleanup(true);
 	}
 
@@ -485,98 +427,82 @@ bool KhinsiderParser::ParsePlaylist(htmlDocPtr Document,QSharedPointer<Album> ne
 	const xmlNodePtr SongListPtr = HTMLParserHelper::TraverseNext(tableNode->children, 3);
 
 	if (!SongListPtr) {
-        xmlXPathFreeObject(songList);
+		xmlXPathFreeObject(songList);
 		return cleanup(true);
 	}
 
-	for (xmlNodePtr node = SongListPtr; node; node = node->next)
-	{
+	for (xmlNodePtr node = SongListPtr; node; node = node->next) {
 		if (safeGetProp(node, "id").contains("songlist_footer")) {
 			break;
 		}
 
 		QSharedPointer<Song> newSong = QSharedPointer<Song>::create();
 		const xmlNodePtr songRow = node->children;
-		if (!songRow)
-		{
+		if (!songRow) {
 			continue;
 		}
-		
+
 		const xmlNodePtr SongNameRowPTR = HTMLParserHelper::TraverseNext(songRow, nSongNameIndex);
-		if (SongNameRowPTR && SongNameRowPTR->children && SongNameRowPTR->children->next)
-		{
+		if (SongNameRowPTR && SongNameRowPTR->children && SongNameRowPTR->children->next) {
 			newSong->setSongLink(safeGetProp(SongNameRowPTR->children->next, "href"));
 
-			if (SongNameRowPTR->children->next->children)
-			{
+			if (SongNameRowPTR->children->next->children) {
 				newSong->setName(safeGetContent(SongNameRowPTR->children->next->children));
 			}
 		}
 
 		//Song art
-		const xmlNodePtr SongArtTD = HTMLParserHelper::TraverseNext(SongNameRowPTR,-2);
-		if (SongArtTD)
-		{
-			if (safeGetProp(SongArtTD, "class") == "albumIcon")
-			{
-				if(SongArtTD->children && SongArtTD->children->children)
-				{
-					newAlbum->addAlbumImage(safeGetProp(SongArtTD->children->children,"src"));
+		const xmlNodePtr SongArtTD = HTMLParserHelper::TraverseNext(SongNameRowPTR, -2);
+		if (SongArtTD) {
+			if (safeGetProp(SongArtTD, "class") == "albumIcon") {
+				if (SongArtTD->children && SongArtTD->children->children) {
+					newAlbum->addAlbumImage(safeGetProp(SongArtTD->children->children, "src"));
 				}
 			}
 		}
 
 		const xmlNodePtr SongLength = HTMLParserHelper::TraverseNext(SongNameRowPTR, 2);
-		if (SongLength && SongLength->children && SongLength->children->children)
-		{
-
-				newSong->setLengthInSeconds( HTMLParserHelper::convertToSeconds(safeGetContent(SongLength->children->children)));
-
+		if (SongLength && SongLength->children && SongLength->children->children) {
+			newSong->setLengthInSeconds(
+				HTMLParserHelper::convertToSeconds(safeGetContent(SongLength->children->children)));
 		}
 		newAlbum->addSong(newSong);
-
-    }
+	}
 	return cleanup(true);
 }
 
-bool KhinsiderParser::ParseDownloadLink(htmlDocPtr Document, QSharedPointer<Song> Out)
-{
+bool KhinsiderParser::ParseDownloadLink(htmlDocPtr Document, QSharedPointer<Song> Out) {
 	const xmlXPathContextPtr PathContextPtr = xmlXPathNewContext(Document);
-	if (!PathContextPtr)
-	{
+	if (!PathContextPtr) {
 		return false;
 	}
 	auto cleanup = [&](bool success) {
 		xmlXPathFreeContext(PathContextPtr);
 		return success;
-		};
+	};
 
 	const xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(
-		reinterpret_cast<const xmlChar*>("//*[@id='pageContent']/p[4]"), PathContextPtr);
+		reinterpret_cast<const xmlChar *>("//*[@id='pageContent']/p[4]"), PathContextPtr);
 
-	if (!xpathObj || !xpathObj->nodesetval || xpathObj->nodesetval->nodeNr < 1)
-	{
+	if (!xpathObj || !xpathObj->nodesetval || xpathObj->nodesetval->nodeNr < 1) {
 		if (xpathObj) xmlXPathFreeObject(xpathObj);
 		return cleanup(false);
 	}
-	
+
 
 	const xmlNodePtr FirstDownloadLink = xpathObj->nodesetval->nodeTab[0];
-	for (xmlNodePtr DownloadNode = FirstDownloadLink; DownloadNode; DownloadNode = DownloadNode->next)
-	{
-		if (DownloadNode->children && DownloadNode->children->type == XML_ELEMENT_NODE)
-		{
+	for (xmlNodePtr DownloadNode = FirstDownloadLink; DownloadNode; DownloadNode = DownloadNode->next) {
+		if (DownloadNode->children && DownloadNode->children->type == XML_ELEMENT_NODE) {
 			const QString link = safeGetProp(DownloadNode->children, "href");
 			QString ext = link.mid(link.lastIndexOf('.') + 1);
-			ext = ext.toUpper();  // Convert to uppercase
-			Out->addDownloadLink(ext,safeGetProp(DownloadNode->children, "href"));
+			ext = ext.toUpper(); // Convert to uppercase
+			Out->addDownloadLink(ext, safeGetProp(DownloadNode->children, "href"));
 		}
 		DownloadNode = DownloadNode->next;
-		if(DownloadNode == nullptr)
-		{
+		if (DownloadNode == nullptr) {
 			break;
 		}
 	}
-	
+
 	return cleanup(true);
 }

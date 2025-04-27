@@ -9,28 +9,14 @@ Rectangle {
     height: 700
     width: 400
 
-    Connections{
-        target: appController.settingsVM
-        onUpdateFound: {
-            messageDialog.visible = true;
-        }
-    }
-
-    UpdateCheckerDialog {
-        id: messageDialog
-        onAccepted: {
-            Qt.openUrlExternally("https://github.com/weespin/KhinsiderDownloader/releases")
-        }
-        Component.onCompleted: visible = false
-    }
     FolderDialog {
         id: folderDialog
 
-        currentFolder: appController.settingsVM.settings.downloadPath
-        selectedFolder: appController.settingsVM.settings.downloadPath
+        currentFolder: app.settings.downloadPath
+        selectedFolder: app.settings.downloadPath
 
         onAccepted: {
-            appController.settingsVM.settings.setDownloadPath(selectedFolder);
+            app.settings.setDownloadPath(selectedFolder);
         }
     }
     Column {
@@ -56,7 +42,7 @@ Rectangle {
                     anchors.leftMargin: 8
                     color: "#ffffff"
                     font.pointSize: 12
-                    text: "Path: " + appController.settingsVM.settings.downloadPath
+                    text: "Path: " + app.settings.downloadPath
                     elide: Text.ElideRight
                     verticalAlignment: Text.AlignVCenter
                     MouseArea
@@ -64,7 +50,7 @@ Rectangle {
                         anchors.fill: parent;
                         onClicked:
                         {
-                            Qt.openUrlExternally("file://" + appController.settingsVM.settings.downloadPath);
+                            Qt.openUrlExternally("file://" + app.settings.downloadPath);
                         }
                     }
                 }
@@ -119,7 +105,7 @@ Rectangle {
                             y: logrow.y - parent.y
                             onClicked:
                             {
-                                Qt.openUrlExternally("file:///" +  appController.logController.logDir);
+                                Qt.openUrlExternally("file:///" +  app.logController.logDir);
                             }
                         }
                     }
@@ -133,9 +119,9 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    appController.settingsVM.settings.setSuppressLogs(selectedIndex == 0);
+                    app.settings.setSuppressLogs(selectedIndex == 0);
                 }
-                selectedIndex: appController.settingsVM.settings.suppressLogs ? 0 : 1;
+                selectedIndex: app.settings.suppressLogs ? 0 : 1;
                 Component.onCompleted: {
                     model.clear();
                     model.append({
@@ -146,7 +132,7 @@ Rectangle {
                                  });
                     selectedIndex = 1
                     selectedIndex = 0
-                    selectedIndex = appController.settingsVM.settings.suppressLogs ? 0 : 1;
+                    selectedIndex = app.settings.suppressLogs ? 0 : 1;
                 }
 
                 //True false
@@ -174,11 +160,11 @@ Rectangle {
             }
             WNumberBox {
                 height: parent.height
-                currentNumber: appController.settingsVM.settings.downloadThreads
-                nextNumber: appController.settingsVM.settings.downloadThreads
+                currentNumber: app.settings.downloadThreads
+                nextNumber: app.settings.downloadThreads
                 onValueChanged:
                 {
-                    appController.settingsVM.settings.setDownloadThreads(currentNumber);
+                    app.settings.setDownloadThreads(currentNumber);
                 }
                 maxNumber: 64
                 minNumber: 1
@@ -208,11 +194,11 @@ Rectangle {
             }
             WNumberBox {
                 height: parent.height
-                currentNumber: appController.settingsVM.settings.maxConcurrentDownloadsPerThread
-                nextNumber: appController.settingsVM.settings.maxConcurrentDownloadsPerThread
+                currentNumber: app.settings.maxConcurrentDownloadsPerThread
+                nextNumber: app.settings.maxConcurrentDownloadsPerThread
                 onValueChanged:
                 {
-                    appController.settingsVM.settings.setMaxConcurrentDownloadsPerThread(currentNumber);
+                    app.settings.setMaxConcurrentDownloadsPerThread(currentNumber);
                 }
                 maxNumber: 256
                 minNumber: 0
@@ -246,9 +232,9 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    appController.settingsVM.settings.setPreferredAudioQualityInt(selectedIndex);
+                    app.settings.setPreferredAudioQualityInt(selectedIndex);
                 }
-                selectedIndex: appController.settingsVM.settings.preferredAudioQuality;
+                selectedIndex: app.settings.preferredAudioQuality;
                 Component.onCompleted: {
                     model.clear();
                     model.append({
@@ -259,7 +245,7 @@ Rectangle {
                                  });
                     selectedIndex = 1
                     selectedIndex = 0
-                    selectedIndex = appController.settingsVM.settings.preferredAudioQuality;
+                    selectedIndex = app.settings.preferredAudioQuality;
                 }
 
 
@@ -293,9 +279,9 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    appController.settingsVM.settings.setDownloadArt(selectedIndex == 0);
+                    app.settings.setDownloadArt(selectedIndex == 0);
                 }
-                selectedIndex: appController.settingsVM.settings.downloadArt ? 0 : 1;
+                selectedIndex: app.settings.downloadArt ? 0 : 1;
                 Component.onCompleted: {
                     model.clear();
                     model.append({
@@ -306,7 +292,7 @@ Rectangle {
                                  });
                     selectedIndex = 1
                     selectedIndex = 0
-                    selectedIndex = appController.settingsVM.settings.downloadArt ? 0 : 1;
+                    selectedIndex = app.settings.downloadArt ? 0 : 1;
                 }
 
             }
@@ -342,9 +328,9 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    appController.settingsVM.settings.setSkipDownloaded(selectedIndex == 0);
+                    app.settings.setSkipDownloaded(selectedIndex == 0);
                 }
-                selectedIndex: appController.settingsVM.settings.skipDownloaded ? 0 : 1;
+                selectedIndex: app.settings.skipDownloaded ? 0 : 1;
                 Component.onCompleted: {
                     model.clear();
                     model.append({
@@ -355,7 +341,7 @@ Rectangle {
                                  });
                     selectedIndex = 1
                     selectedIndex = 0
-                    selectedIndex = appController.settingsVM.settings.skipDownloaded ? 0 : 1;
+                    selectedIndex = app.settings.skipDownloaded ? 0 : 1;
                 }
 
                 //True false

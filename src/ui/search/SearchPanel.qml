@@ -11,7 +11,7 @@ Rectangle {
 
     Connections
     {
-        target: appController.searchVM
+        target: app.searchController.searchResultVM
         function onSelectedIndexChanged()
         {
             mainWindow.state = "normal";
@@ -105,7 +105,7 @@ Rectangle {
                                     }
                                     onAccepted:
                                     {
-                                        appController.searchVM.performSearch(textfield.text);
+                                        app.searchController.doSearch(textfield.text);
                                     }
 
                                     onHoveredChanged: {
@@ -184,7 +184,7 @@ Rectangle {
 
                                     onClicked: {
 
-                                        appController.searchVM.performSearch(textfield.text);
+                                        app.searchController.doSearch(textfield.text);
                                     }
                                     onEntered: {
                                         growAnim.running = true;
@@ -209,7 +209,7 @@ Rectangle {
                         width: parent.width * 0.2
                         onClicked:
                         {
-                            appController.searchVM.addAllAlbumsRequested();
+                            app.searchController.addAllAlbumsToDownloads();
                             searchList.hideAllResults();
                         }
                     }

@@ -9,15 +9,15 @@ ColumnLayout{
     height:300
     property int imageIndex: 0
     property int imageTarget : 0
-    property var imageSources: appController.albumInfoVM.albumImages
+    property var imageSources: app.searchController.albumInfoVM.albumImages
     Connections {
-        target: appController.albumInfoVM
+        target: app.searchController.albumInfoVM
         function onCurrentAlbumChanged()
         {
             col.imageIndex = 0
             col.imageTarget = 0
             fadeOut.start()
-            if(appController.albumInfoVM.currentAlbum.isInfoParsed)
+            if(app.searchController.albumInfoVM.currentAlbum.isInfoParsed)
             {
                 blur.radius = 0;
             }
@@ -109,9 +109,9 @@ ColumnLayout{
             id: busyIndicator
             anchors.fill: profileImage
             running: {
-                if (!appController.albumInfoVM.currentAlbum)
+                if (!app.searchController.albumInfoVM.currentAlbum)
                     return false;
-                return !appController.albumInfoVM.currentAlbum.isInfoParsed || profileImage.progress !== 1;
+                return !app.searchController.albumInfoVM.currentAlbum.isInfoParsed || profileImage.progress !== 1;
             }
             layer.enabled: true
             layer.effect:ColorOverlay{

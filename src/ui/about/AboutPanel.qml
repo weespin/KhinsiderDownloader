@@ -5,13 +5,27 @@ import QtQml
 import QtQuick.Controls.Basic
 import QtQml.XmlListModel
 import QtQuick.Layouts
+
 Rectangle {
     color: "#2c3e50"
     height: 700
     width: 400
+    Connections {
+        target: app.settingsController.settingsVM
+        onUpdateFound: {
+            messageDialog.visible = true;
+        }
+    }
 
+    UpdateCheckerDialog {
+        id: messageDialog
+        onAccepted: {
+            Qt.openUrlExternally("https://github.com/weespin/KhinsiderDownloader/releases")
+        }
+        Component.onCompleted: visible = false
+    }
     ColumnLayout {
-        id:maincolumn
+        id: maincolumn
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 10
         width: parent.width * 0.9
@@ -30,8 +44,7 @@ Rectangle {
             text: qsTr("Thanks to:")
             font.pointSize: 15
         }
-        Rectangle
-        {
+        Rectangle {
             color: "#6C98C4"
             width: parent.width
             Layout.preferredHeight: parent.height * 0.6
@@ -46,8 +59,12 @@ Rectangle {
                     source: "qrc:/CONTRIBUTORS.xml"
                     query: "/contributors/contributor"
 
-                    XmlListModelRole { name: "username"; elementName: "username" }
-                    XmlListModelRole { name: "contributionType"; elementName: "contributionType" }
+                    XmlListModelRole {
+                        name: "username"; elementName: "username"
+                    }
+                    XmlListModelRole {
+                        name: "contributionType"; elementName: "contributionType"
+                    }
                 }
 
                 Column {
@@ -112,22 +129,19 @@ Rectangle {
         Item {
             Layout.fillHeight: true
         }
-        RowLayout
-        {
+        RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: implicitHeight * 2
-            Text
-            {
+            Text {
                 Layout.fillWidth: true
                 font.pointSize: 16
                 color: "white"
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
-                text: "Version: " + appController.aboutController.appVersion
+                text: "Version: " + app.aboutController.appVersion
             }
 
-            Text
-            {
+            Text {
                 Layout.fillWidth: true
                 Layout.preferredHeight: implicitHeight
                 text: "<a href=\"https://weesp.in\">Weespin</a> 2025"

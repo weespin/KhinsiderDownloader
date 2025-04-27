@@ -1,5 +1,5 @@
 #include "DownloaderController.h"
-#include "main.h"
+#include "Album.h"
 
 static const QMap<QString, int> qualityRanking = {
     {"FLAC", 4},
@@ -8,7 +8,7 @@ static const QMap<QString, int> qualityRanking = {
     {"MP3", 1}
 };
 
-DownloaderController::DownloaderController(QObject *parent, Settings* settings)
+DownloaderController::DownloaderController(QObject *parent, Settings *settings)
     : QObject(parent), m_settings(settings) {
     m_downloadManager = new AsyncDownloadManager(parent);
     m_Model = new DownloaderModel();
@@ -26,16 +26,15 @@ void DownloaderController::addAlbumToDownload(QSharedPointer<Album> album, Downl
     m_addedAlbums[album] = quality;
 }
 
-void DownloaderController::fetchFullAlbumData(QSharedPointer<Album> album)
-{
+void DownloaderController::fetchFullAlbumData(QSharedPointer<Album> album) {
     if (album->isInfoParsed()) {
         return;
     }
 
     WDownloadReplyMemory *reply = new WDownloadReplyMemory(nullptr);
-    connect(reply, &WDownloadReplyMemory::downloadFinished,this, [this, reply, album](QNetworkReply::NetworkError error)
-            {
-                if (error!=QNetworkReply::NoError) {
+    connect(reply, &WDownloadReplyMemory::downloadFinished, this,
+            [this, reply, album](QNetworkReply::NetworkError error) {
+                if (error != QNetworkReply::NoError) {
                     album->setHasErrors(true);
                     reply->deleteLater();
                 }
@@ -47,13 +46,9 @@ void DownloaderController::fetchFullAlbumData(QSharedPointer<Album> album)
                     qWarning() << "HTML read failed";
                     return;
                 }
-                if(album->isPlaylist())
-                {
+                if (album->isPlaylist()) {
                     KhinsiderParser::ParsePlaylist(doc, album);
-
-                }
-                else
-                {
+                } else {
                     KhinsiderParser::ParseAlbumFullData(doc, album);
                 }
                 xmlFreeDoc(doc);
@@ -61,25 +56,23 @@ void DownloaderController::fetchFullAlbumData(QSharedPointer<Album> album)
                 DownloadQuality quality = m_addedAlbums[album];
                 onAlbumDataFetched(album, quality);
                 reply->deleteLater();
-            },Qt::QueuedConnection);
+            }, Qt::QueuedConnection);
     m_downloadManager->enqueueDownload(
         reply,
         album->albumLink()
-        );
+    );
 }
 
 
 void DownloaderController::onAlbumDataFetched(QSharedPointer<Album> album, DownloadQuality quality) {
     processSongDownloads(album, quality);
-    if (m_settings->downloadArt())
-    {
+    if (m_settings->downloadArt()) {
         processArtDownloads(album);
     }
 }
 
 void DownloaderController::processSongDownloads(QSharedPointer<Album> album, DownloadQuality quality) {
-
-    for (auto song : album->songs()) {
+    for (auto song: album->songs()) {
         if (!song->getAllDownloadLinksParsed()) {
             fetchSongDownloadLinks(song, quality, album);
         } else {
@@ -89,16 +82,14 @@ void DownloaderController::processSongDownloads(QSharedPointer<Album> album, Dow
     }
 }
 
-void DownloaderController::processArtDownloads(QSharedPointer<Album> album)
-{
-    for (auto downloadLink : album->albumImage())
-    {
+void DownloaderController::processArtDownloads(QSharedPointer<Album> album) {
+    for (auto downloadLink: album->albumImage()) {
         QString downloadPath = m_settings->downloadPath();
 
         QString albumName = album ? album->name() : "Unknown Album";
 
         const QString invalidChars = "\\/:*?\"<>|";
-        for (QChar c : invalidChars) {
+        for (QChar c: invalidChars) {
             albumName.remove(c);
         }
 
@@ -110,23 +101,21 @@ void DownloaderController::processArtDownloads(QSharedPointer<Album> album)
         QUrl url(downloadLink);
         QString fileName = QUrl::fromPercentEncoding(url.path().section('/', -1).toUtf8());
 
-        for (const QChar &c : invalidChars) {
+        for (const QChar &c: invalidChars) {
             fileName.replace(c, '_');
         }
 
         QString filePath = albumDir.path() + QDir::separator() + fileName;
         if (QFileInfo(filePath).exists() && QFileInfo(filePath).size() > 1024 && m_settings->skipDownloaded()) {
-
             return;
         }
 
         WDownloadReplyFile *artDownloadReply = new WDownloadReplyFile(nullptr);
         artDownloadReply->setFilePath(filePath);
 
-        connect(artDownloadReply, &WDownloadReplyFile::downloadFinished,this,
+        connect(artDownloadReply, &WDownloadReplyFile::downloadFinished, this,
                 [this, album,fileName,artDownloadReply, filePath](QNetworkReply::NetworkError error) {
                     if (error != QNetworkReply::NoError) {
-
                         album->setHasErrors(true);
 
                         qWarning() << "Request failed downloading art:" << fileName << "to" << filePath;
@@ -137,16 +126,15 @@ void DownloaderController::processArtDownloads(QSharedPointer<Album> album)
                     qDebug() << "Successfully downloaded:" << fileName << "to" << filePath;
 
                     artDownloadReply->deleteLater();
-                },Qt::QueuedConnection);
+                }, Qt::QueuedConnection);
 
 
         m_downloadManager->enqueueDownload(artDownloadReply, downloadLink);
     }
 }
 
-void DownloaderController::cancelAlbum(Album *album)
-{
-    for (auto song : album->songs()) {
+void DownloaderController::cancelAlbum(Album *album) {
+    for (auto song: album->songs()) {
         song->cancel();
     }
     album->setIsDownloading(false);
@@ -159,8 +147,7 @@ void DownloaderController::cancelAlbum(Album *album)
     }
 }
 
-void DownloaderController::retryAlbum(Album *album)
-{
+void DownloaderController::retryAlbum(Album *album) {
     if (!album->hasErrors()) {
         return;
     }
@@ -189,9 +176,8 @@ void DownloaderController::retryAlbum(Album *album)
     }
 
     bool hasErroredSongs = false;
-    for (auto song : album->songs()) {
-        if (song->errored())
-        {
+    for (auto song: album->songs()) {
+        if (song->errored()) {
             hasErroredSongs = true;
             song->setErrored(false);
             song->setDownloaded(false);
@@ -211,14 +197,13 @@ void DownloaderController::retryAlbum(Album *album)
     }
 }
 
-void DownloaderController::fetchSongDownloadLinks(QSharedPointer<Song> song, DownloadQuality quality, QSharedPointer<Album> album) {
+void DownloaderController::fetchSongDownloadLinks(QSharedPointer<Song> song, DownloadQuality quality,
+                                                  QSharedPointer<Album> album) {
     WDownloadReplyMemory *songDownloadListReply = new WDownloadReplyMemory(nullptr);
 
-    connect(songDownloadListReply, &WDownloadReplyMemory::downloadFinished,this,
-            [this, song, quality, album, songDownloadListReply](QNetworkReply::NetworkError error)
-            {
+    connect(songDownloadListReply, &WDownloadReplyMemory::downloadFinished, this,
+            [this, song, quality, album, songDownloadListReply](QNetworkReply::NetworkError error) {
                 if (error != QNetworkReply::NoError) {
-
                     album->setHasErrors(true);
                     song->setErrored(true);
 
@@ -238,34 +223,37 @@ void DownloaderController::fetchSongDownloadLinks(QSharedPointer<Song> song, Dow
 
                 onSongLinksFound(song, quality, album);
                 songDownloadListReply->deleteLater();
-            },Qt::QueuedConnection);
+            }, Qt::QueuedConnection);
 
-    connect(song.get(), &Song::wantToCancel, songDownloadListReply, &WDownloadReplyMemory::cancel,Qt::QueuedConnection);
+    connect(song.get(), &Song::wantToCancel, songDownloadListReply, &WDownloadReplyMemory::cancel,
+            Qt::QueuedConnection);
 
     m_downloadManager->enqueueDownload(
         songDownloadListReply,
         "https://downloads.khinsider.com" + song.get()->songLink()
-        );
+    );
 }
 
-void DownloaderController::onSongLinksFound(QSharedPointer<Song> song, DownloadQuality quality, QSharedPointer<Album> album)
-{
+void DownloaderController::onSongLinksFound(QSharedPointer<Song> song, DownloadQuality quality,
+                                            QSharedPointer<Album> album) {
     album->setIsDownloading(true);
     downloadSongFile(song, quality, album);
 }
 
-void DownloaderController::downloadSongFile(QSharedPointer<Song> song, DownloadQuality quality, QSharedPointer<Album> album)
-{
+void DownloaderController::downloadSongFile(QSharedPointer<Song> song, DownloadQuality quality,
+                                            QSharedPointer<Album> album) {
     QString downloadLink = "";
 
     if (quality == DownloadQuality::BEST) {
-        if (song.isNull()) {  // Check pointer validity
+        if (song.isNull()) {
+            // Check pointer validity
             qWarning() << "Song pointer is null!";
             return;
         }
 
-        const auto& links = song->downloadLinks();  // Store reference
-        if (links.isEmpty()) {  // Early exit if no links
+        const auto &links = song->downloadLinks(); // Store reference
+        if (links.isEmpty()) {
+            // Early exit if no links
             qWarning() << "No download links available for song:" << song->name();
             return;
         }
@@ -294,7 +282,7 @@ void DownloaderController::downloadSongFile(QSharedPointer<Song> song, DownloadQ
     QString albumName = album ? album->name() : "Unknown Album";
 
     const QString invalidChars = "\\/:*?\"<>|";
-    for (QChar c : invalidChars) {
+    for (QChar c: invalidChars) {
         albumName.remove(c);
     }
 
@@ -306,11 +294,11 @@ void DownloaderController::downloadSongFile(QSharedPointer<Song> song, DownloadQ
     QUrl url(downloadLink);
     QString fileName = QUrl::fromPercentEncoding(url.path().section('/', -1).toUtf8());
 
-    for (const QChar &c : invalidChars) {
+    for (const QChar &c: invalidChars) {
         fileName.replace(c, '_');
     }
 
-    QString filePath = albumDir.path() + QDir::separator()+ fileName;
+    QString filePath = albumDir.path() + QDir::separator() + fileName;
 
     if (QFileInfo(filePath).exists() && QFileInfo(filePath).size() > 1024 && m_settings->skipDownloaded()) {
         song->setDownloaded(true);
@@ -321,7 +309,7 @@ void DownloaderController::downloadSongFile(QSharedPointer<Song> song, DownloadQ
     WDownloadReplyFile *songDownloadReply = new WDownloadReplyFile(nullptr);
     songDownloadReply->setFilePath(filePath);
 
-    connect(songDownloadReply, &WDownloadReplyFile::downloadFinished,this,
+    connect(songDownloadReply, &WDownloadReplyFile::downloadFinished, this,
             [this, song,album, songDownloadReply, filePath](QNetworkReply::NetworkError error) {
                 if (error != QNetworkReply::NoError) {
                     song->setErrored(true);
@@ -336,7 +324,7 @@ void DownloaderController::downloadSongFile(QSharedPointer<Song> song, DownloadQ
                 song->setDownloaded(true);
                 emit songDownloadFinished(song);
                 songDownloadReply->deleteLater();
-            },Qt::QueuedConnection);
+            }, Qt::QueuedConnection);
 
     connect(songDownloadReply, &WDownloadReplyBase::downloadSpeed,
             this, [this, song, songDownloadReply, filePath](qint64 speed) {
@@ -344,7 +332,7 @@ void DownloaderController::downloadSongFile(QSharedPointer<Song> song, DownloadQ
             },
             Qt::QueuedConnection);
 
-    connect(song.get(), &Song::wantToCancel, songDownloadReply, &WDownloadReplyMemory::cancel,Qt::QueuedConnection);
+    connect(song.get(), &Song::wantToCancel, songDownloadReply, &WDownloadReplyMemory::cancel, Qt::QueuedConnection);
     m_downloadManager->enqueueDownload(songDownloadReply, downloadLink);
 }
 
@@ -373,7 +361,7 @@ void DownloaderController::onDownloadListAdd(QSharedPointer<Album> album, Downlo
 }
 
 void DownloaderController::updateModelData() {
-    QVector<Album*> albumsForModel;
+    QVector<Album *> albumsForModel;
     for (auto it = m_addedAlbums.begin(); it != m_addedAlbums.end(); ++it) {
         albumsForModel.append(it.key().data());
     }
@@ -400,7 +388,7 @@ void DownloaderController::addToDownloadList(const QString &List) {
         static const QRegularExpression albumre("game-soundtracks/album/(.*)");
         static const QRegularExpression playlistre("/playlist/(.*)");
 
-        auto processMatch = [&](const QRegularExpressionMatch& match, const QString& url, bool isPlaylist) {
+        auto processMatch = [&](const QRegularExpressionMatch &match, const QString &url, bool isPlaylist) {
             QString albumName = match.captured(1);
             auto newAlbum = QSharedPointer<Album>::create();
 
@@ -434,9 +422,8 @@ void DownloaderController::onMaxConcurrentOperationsChanged() {
     m_downloadManager->setDownloadLimitPerThread(m_settings->maxConcurrentDownloadsPerThread());
 }
 
-void DownloaderController::requestAddAlbums(QVector<QSharedPointer<Album>> albums, DownloadQuality quality)
-{
-    for (const auto &album : albums) {
+void DownloaderController::requestAddAlbums(QVector<QSharedPointer<Album> > albums, DownloadQuality quality) {
+    for (const auto &album: albums) {
         addAlbumToDownload(album, quality);
 
         if (!album->isInfoParsed()) {
@@ -453,7 +440,7 @@ void DownloaderController::parseDownloadLinks(QSharedPointer<Album> album) {
     // unused
     for (QSharedPointer<Song> &song: album->songs()) {
         if (!song->getAllDownloadLinksParsed()) {
-            fetchSongDownloadLinks(song, m_addedAlbums[album],album);
+            fetchSongDownloadLinks(song, m_addedAlbums[album], album);
         }
     }
 }
