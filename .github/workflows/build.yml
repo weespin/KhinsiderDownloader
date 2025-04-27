@@ -296,6 +296,10 @@ jobs:
             cp release-artifacts/windows-installer-${{ needs.prebuild.outputs.version }}/KhinsiderInstaller.exe release-assets/KhinsiderInstaller-${{ steps.get_version.outputs.version }}.exe
           fi
           
+          if [ -d "release-artifacts/windows-release-${{ needs.prebuild.outputs.version }}" ]; then
+            cp release-artifacts/windows-release-${{ needs.prebuild.outputs.version }}.zip release-assets/KhinsiderDownloaderPortable-${{ steps.get_version.outputs.version }}.zip
+          fi
+          
           # List all prepared assets
           ls -la release-assets/
 
