@@ -10,7 +10,7 @@ void Settings::ParseFromConfig(QSettings &settings) {
     val = qBound(0, val, static_cast<int>(DownloadQuality::BEST));
     setPreferredAudioQuality(static_cast<DownloadQuality>(val));
     setDownloadThreads(settings.value("downloadThreads", 1).toInt());
-    setSuppressLogs(settings.value("suppressLogs", false).toBool());
+    setSuppressLogs(settings.value("suppressLogs", true).toBool());
     setDownloadArt(settings.value("downloadArt", false).toBool());
     setSkipDownloaded(settings.value("skipDownloaded", true).toBool());
 }
