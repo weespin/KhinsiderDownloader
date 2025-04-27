@@ -67,24 +67,30 @@ jobs:
       - name: Check Build Flags
         id: check_flags
         run: |
-          MESSAGE=$(git log -1 --pretty=%B)
-
-          if echo "$MESSAGE" | grep -qE "\[skip-ci\]|\[no-ci\]"; then
+            MESSAGE=$(git log -1 --pretty=%B)
+            echo "Last commit message: $MESSAGE"
+            
+            if echo "$MESSAGE" | grep -qE "\[skip-ci\]|\[no-ci\]"; then
+            echo "Detected skip CI flag, setting both platforms to false"
             echo "run_linux=false" >> $GITHUB_OUTPUT
             echo "run_windows=false" >> $GITHUB_OUTPUT
-          else
+            else
             if echo "$MESSAGE" | grep -q "\[no-linux\]"; then
-              echo "run_linux=false" >> $GITHUB_OUTPUT
+                echo "Skipping Linux build"
+                echo "run_linux=false" >> $GITHUB_OUTPUT
             else
-              echo "run_linux=true" >> $GITHUB_OUTPUT
+                echo "Running Linux build"
+                echo "run_linux=true" >> $GITHUB_OUTPUT
             fi
-
+        
             if echo "$MESSAGE" | grep -q "\[no-win\]"; then
-              echo "run_windows=false" >> $GITHUB_OUTPUT
+                echo "Skipping Windows build"
+                echo "run_windows=false" >> $GITHUB_OUTPUT
             else
-              echo "run_windows=true" >> $GITHUB_OUTPUT
+                echo "Running Windows build"
+                echo "run_windows=true" >> $GITHUB_OUTPUT
             fi
-          fi
+            fi
 
   windows_build:
     needs: prebuild
