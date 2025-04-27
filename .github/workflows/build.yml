@@ -288,7 +288,7 @@ jobs:
             cd release-artifacts/linux-release-${{ needs.prebuild.outputs.version }}
             find . -name "*.zip" -exec unzip {} \;
             for appimage in $(find . -name "*.AppImage"); do
-                cp "$appimage" ../../release-assets/KhinsiderDownloader-${{ needs.prebuild.outputs.version }}-linux-x86_64.AppImage
+                cp "$appimage" ../../release-assets/KhinsiderDownloader-${{ steps.get_version.outputs.version }}-linux-x86_64.AppImage
             done
             cd ../..
           fi
