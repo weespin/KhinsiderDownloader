@@ -47,7 +47,7 @@ jobs:
       - name: Bump resource.rc
         run: |
           cd scripts/shared
-          py updateversion.py
+          python3 updateversion.py
           
       - name: Commit updated APP_VERSION
         run: |
