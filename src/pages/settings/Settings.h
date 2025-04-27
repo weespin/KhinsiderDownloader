@@ -79,6 +79,7 @@ public slots:
             } else {
                 m_downloadPath = downloadPath;
             }
+            QDir().mkpath(m_downloadPath);
             emit downloadPathChanged();
             emit settingsChanged();
         }
