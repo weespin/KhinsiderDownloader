@@ -48,12 +48,14 @@ jobs:
         run: |
           cd scripts/shared
           python3 updateversion.py
+          cd ../..
           
       - name: Commit updated APP_VERSION
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add APP_VERSION
+          git add resource.rc
           git commit -m "ci: bump APP_VERSION"
           git push
 
