@@ -183,7 +183,7 @@ void DownloadWorker::startDownload(WDownloadReplyBase *request) {
 	curl_easy_setopt(easyHandle, CURLOPT_TCP_KEEPALIVE, 1L);
 	curl_easy_setopt(easyHandle, CURLOPT_TCP_FASTOPEN, 1L);
 	curl_easy_setopt(easyHandle, CURLOPT_PIPEWAIT, 1L);
-	curl_easy_setopt(easyHandle, CURLOPT_SSL_VERIFYPEER, 0L);
+    //curl_easy_setopt(easyHandle, CURLOPT_SSL_VERIFYPEER, 0L);
 	// Set up progress callback
 	curl_easy_setopt(easyHandle, CURLOPT_XFERINFOFUNCTION, progressCallback);
 	curl_easy_setopt(easyHandle, CURLOPT_XFERINFODATA, request);

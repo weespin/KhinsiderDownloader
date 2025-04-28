@@ -199,13 +199,29 @@ Rectangle {
                 radius: 10
                 width: parent.width * 0.7
 
-                Text {
+                RowLayout
+                {
                     anchors.fill: parent
                     anchors.leftMargin: 8
-                    color: "#ffffff"
-                    font.pointSize: 12
-                    text: "Downloads per thread"
-                    verticalAlignment: Text.AlignVCenter
+                    anchors.rightMargin: 8
+                    Text
+                    {
+                        color: "#ffffff"
+                        font.pointSize: 12
+                        text: "Concurrent downloads per thread"
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    Item
+                    {
+                        Layout.fillWidth: true
+                    }
+                    Text {
+                        color: "#99ffffff"
+                        font.pointSize: 12
+                        text: "0 = no limit (recommended)"
+                        verticalAlignment: Text.AlignVCenter
+
+                    }
                 }
             }
             WNumberBox {
