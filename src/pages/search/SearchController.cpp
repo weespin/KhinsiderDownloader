@@ -52,9 +52,11 @@ void SearchController::doSearch(const QString &query) {
         htmlDocPtr doc = htmlReadMemory(htmlStr.c_str(), htmlStr.size(), nullptr, nullptr,
                                         HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
         QVector<QSharedPointer<Album> > res;
-        if (!doc) {
+        if (!doc)
+        {
             qWarning() << "HTML read failed";
         }
+
         KhinsiderParser::ParseSearchResults(doc, res);
         emit searchResultsReceived(res);
         xmlFreeDoc(doc);
@@ -84,10 +86,18 @@ void SearchController::fetchFullAlbumData(QSharedPointer<Album> album) {
         htmlDocPtr doc = htmlReadMemory(htmlStr.c_str(), htmlStr.size(), nullptr, nullptr,
                                         HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
 
-        if (!doc) {
+        if (!doc)
+        {
+            album->setHasErrors(true);
+            xmlFreeDoc(doc);
             qWarning() << "HTML read failed";
+            return;
         }
-        KhinsiderParser::ParseAlbumFullData(doc, album);
+        if(!KhinsiderParser::ParseAlbumFullData(doc, album))
+        {
+            album->setHasErrors(true);
+            xmlFreeDoc(doc);
+        }
         ImagePrecache::instance()->precache(album->albumImage());
         emit onFullFetched();
         xmlFreeDoc(doc);

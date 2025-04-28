@@ -135,9 +135,9 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    app.settings.setSuppressLogs(selectedIndex == 0);
+                    app.settings.setEnableLogging(selectedIndex == 0);
                 }
-                selectedIndex: app.settings.suppressLogs ? 0 : 1;
+                selectedIndex: app.settings.enableLogging ? 0 : 1;
                 Component.onCompleted: {
                     model.clear();
                     model.append({
@@ -148,7 +148,7 @@ Rectangle {
                                  });
                     selectedIndex = 1
                     selectedIndex = 0
-                    selectedIndex = app.settings.suppressLogs ? 0 : 1;
+                    selectedIndex = app.settings.enableLogging ? 0 : 1;
                 }
 
                 //True false

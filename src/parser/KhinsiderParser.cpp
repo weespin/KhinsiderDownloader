@@ -327,7 +327,7 @@ bool KhinsiderParser::ParseSearchResults(htmlDocPtr Document, QVector<QSharedPoi
 	if (!albumListObj || !albumListObj->nodesetval || albumListObj->nodesetval->nodeNr < 1 ||
 	    !albumListObj->nodesetval->nodeTab[0]->children) {
 		if (albumListObj) xmlXPathFreeObject(albumListObj);
-		return cleanup(true);
+        return cleanup(false);
 	}
 
 	const xmlNodePtr albumListNode = HTMLParserHelper::TraverseNext(albumListObj->nodesetval->nodeTab[0]->children, 3);

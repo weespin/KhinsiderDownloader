@@ -47,7 +47,7 @@ void LogController::messageHandler(QtMsgType type, const QMessageLogContext &con
             .arg(context.line)
             .arg(context.function);
 
-    if (m_settings && !m_settings->suppressLogs() && m_logFile.isOpen()) {
+    if (m_settings && m_settings->enableLogging() && m_logFile.isOpen()) {
         m_stream << logMsg << Qt::flush;
     }
 #ifdef QT_DEBUG

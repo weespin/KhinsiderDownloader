@@ -44,12 +44,24 @@ void DownloaderController::fetchFullAlbumData(QSharedPointer<Album> album) {
                                                 HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
                 if (!doc) {
                     qWarning() << "HTML read failed";
+                    album->setHasErrors(true);
                     return;
                 }
                 if (album->isPlaylist()) {
-                    KhinsiderParser::ParsePlaylist(doc, album);
+                    if(!KhinsiderParser::ParsePlaylist(doc, album))
+                    {
+                        album->setHasErrors(true);
+                        xmlFreeDoc(doc);
+                        return;
+                    }
                 } else {
-                    KhinsiderParser::ParseAlbumFullData(doc, album);
+                    if(!KhinsiderParser::ParseAlbumFullData(doc, album))
+                    {
+                        album->setHasErrors(true);
+                        xmlFreeDoc(doc);
+                        return;
+                    }
+
                 }
                 xmlFreeDoc(doc);
 
@@ -60,7 +72,7 @@ void DownloaderController::fetchFullAlbumData(QSharedPointer<Album> album) {
     m_downloadManager->enqueueDownload(
         reply,
         album->albumLink()
-    );
+        );
 }
 
 
@@ -72,7 +84,8 @@ void DownloaderController::onAlbumDataFetched(QSharedPointer<Album> album, Downl
 }
 
 void DownloaderController::processSongDownloads(QSharedPointer<Album> album, DownloadQuality quality) {
-    for (auto song: album->songs()) {
+    for (const auto &song: album->songs())
+    {
         if (!song->getAllDownloadLinksParsed()) {
             fetchSongDownloadLinks(song, quality, album);
         } else {
@@ -83,7 +96,8 @@ void DownloaderController::processSongDownloads(QSharedPointer<Album> album, Dow
 }
 
 void DownloaderController::processArtDownloads(QSharedPointer<Album> album) {
-    for (auto downloadLink: album->albumImage()) {
+    for (const auto &downloadLink: album->albumImage())
+    {
         QString downloadPath = m_settings->downloadPath();
 
         QString albumName = album ? album->name() : "Unknown Album";
@@ -106,7 +120,8 @@ void DownloaderController::processArtDownloads(QSharedPointer<Album> album) {
         }
 
         QString filePath = albumDir.path() + QDir::separator() + fileName;
-        if (QFileInfo(filePath).exists() && QFileInfo(filePath).size() > 1024 && m_settings->skipDownloaded()) {
+        if (QFileInfo::exists(filePath) && QFileInfo(filePath).size() > 1024 && m_settings->skipDownloaded())
+        {
             return;
         }
 
@@ -216,7 +231,13 @@ void DownloaderController::fetchSongDownloadLinks(QSharedPointer<Song> song, Dow
                                                 songDownloadListReply->getData().size(),
                                                 nullptr, nullptr,
                                                 HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
-                KhinsiderParser::ParseDownloadLink(doc, song);
+                if(!KhinsiderParser::ParseDownloadLink(doc, song))
+                {
+                    song->setErrored(true);
+                    album->setHasErrors(true);
+                    xmlFreeDoc(doc);
+                    return;
+                }
                 xmlFreeDoc(doc);
 
                 song->setAllDownloadLinksParsed(true);
@@ -231,7 +252,7 @@ void DownloaderController::fetchSongDownloadLinks(QSharedPointer<Song> song, Dow
     m_downloadManager->enqueueDownload(
         songDownloadListReply,
         "https://downloads.khinsider.com" + song.get()->songLink()
-    );
+        );
 }
 
 void DownloaderController::onSongLinksFound(QSharedPointer<Song> song, DownloadQuality quality,
