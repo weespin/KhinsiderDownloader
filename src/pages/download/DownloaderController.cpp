@@ -34,9 +34,15 @@ void DownloaderController::fetchFullAlbumData(QSharedPointer<Album> album) {
     WDownloadReplyMemory *reply = new WDownloadReplyMemory(nullptr);
     connect(reply, &WDownloadReplyMemory::downloadFinished, this,
             [this, reply, album](QNetworkReply::NetworkError error) {
+                if(error == QNetworkReply::OperationCanceledError)
+                {
+                    reply->deleteLater();
+                    return;
+                }
                 if (error != QNetworkReply::NoError) {
                     album->setHasErrors(true);
                     reply->deleteLater();
+                    return;
                 }
                 htmlDocPtr doc = htmlReadMemory(reply->getData(),
                                                 reply->getData().size(),
@@ -87,6 +93,7 @@ void DownloaderController::processSongDownloads(QSharedPointer<Album> album, Dow
     for (const auto &song: album->songs())
     {
         if (!song->getAllDownloadLinksParsed()) {
+            album->setIsDownloading(true);
             fetchSongDownloadLinks(song, quality, album);
         } else {
             album->setIsDownloading(true);
@@ -130,6 +137,11 @@ void DownloaderController::processArtDownloads(QSharedPointer<Album> album) {
 
         connect(artDownloadReply, &WDownloadReplyFile::downloadFinished, this,
                 [this, album,fileName,artDownloadReply, filePath](QNetworkReply::NetworkError error) {
+                    if(error == QNetworkReply::OperationCanceledError)
+                    {
+                        artDownloadReply->deleteLater();
+                        return;
+                    }
                     if (error != QNetworkReply::NoError) {
                         album->setHasErrors(true);
 
@@ -218,6 +230,11 @@ void DownloaderController::fetchSongDownloadLinks(QSharedPointer<Song> song, Dow
 
     connect(songDownloadListReply, &WDownloadReplyMemory::downloadFinished, this,
             [this, song, quality, album, songDownloadListReply](QNetworkReply::NetworkError error) {
+                if(error == QNetworkReply::OperationCanceledError)
+                {
+                    songDownloadListReply->deleteLater();
+                    return;
+                }
                 if (error != QNetworkReply::NoError) {
                     album->setHasErrors(true);
                     song->setErrored(true);
@@ -332,6 +349,11 @@ void DownloaderController::downloadSongFile(QSharedPointer<Song> song, DownloadQ
 
     connect(songDownloadReply, &WDownloadReplyFile::downloadFinished, this,
             [this, song,album, songDownloadReply, filePath](QNetworkReply::NetworkError error) {
+                if(error == QNetworkReply::OperationCanceledError)
+                {
+                    songDownloadReply->deleteLater();
+                    return;
+                }
                 if (error != QNetworkReply::NoError) {
                     song->setErrored(true);
                     album->setHasErrors(true);

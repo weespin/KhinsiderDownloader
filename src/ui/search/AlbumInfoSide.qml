@@ -68,7 +68,7 @@ Rectangle {
                 {
                     model: app.searchController.albumInfoVM.formats
                     WButton {
-                        visible: !app.searchController.albumInfoVM.isDownloading
+                        visible: !app.searchController.albumInfoVM.currentAlbum.isDownloading
 
                         width: parent.width * 0.6
                         anchors.horizontalCenter: parent.horizontalCenter
