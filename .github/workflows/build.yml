@@ -290,7 +290,7 @@ jobs:
           echo "Using version from prebuild job: ${{ needs.prebuild.outputs.version }}"
           CLEAN_VERSION=$(echo "${{ needs.prebuild.outputs.version }}" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
           echo "version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
-          echo "tag_version=v$CLEAN_VERSION" >> $GITHUB_OUTPUT
+          echo "tag_version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
 
       - name: Download all artifacts
         if: steps.check_release.outputs.create_release == 'true'

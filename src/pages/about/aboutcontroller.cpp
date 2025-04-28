@@ -58,9 +58,14 @@ void AboutController::onUpdateCheckFinished(QNetworkReply *reply) {
     for (const QJsonValue &value: releases) {
         QJsonObject release = value.toObject();
         QString tagName = release["tag_name"].toString();
+        if (tagName.startsWith('v'))
+        {
+            tagName = tagName.mid(1);
+        }
+
         bool isPrerelease = release["prerelease"].toBool();
 
-        if (isPrerelease && isNewVersion(tagName, currentVersion)) {
+        if (!isPrerelease && isNewVersion(tagName, currentVersion)) {
             newerReleases.append(release);
         }
     }
