@@ -135,12 +135,12 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    app.settings.setEnableLogging(selectedIndex == 0);
+                    app.settings.setEnableLogging(selectedIndex != 0);
                 }
                 selectedIndex: app.settings.enableLogging ? 0 : 1;
                 Component.onCompleted:
                 {
-                    resetModel(["True", "False"], app.settings.enableLogging);
+                    resetModel(["False", "True"], app.settings.enableLogging);
                 }
             }
         }
@@ -290,12 +290,12 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    app.settings.setDownloadArt(selectedIndex == 0);
+                    app.settings.setDownloadArt(selectedIndex != 0);
                 }
                 selectedIndex: app.settings.downloadArt ? 0 : 1;
                 Component.onCompleted:
                 {
-                    resetModel(["True", "False"], app.settings.downloadArt);
+                    resetModel([ "False", "True"], app.settings.downloadArt);
                 }
 
             }
@@ -331,12 +331,12 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    app.settings.setSkipDownloaded(selectedIndex == 0);
+                    app.settings.setSkipDownloaded(selectedIndex != 0);
                 }
                 selectedIndex: app.settings.skipDownloaded ? 0 : 1;
                 Component.onCompleted:
                 {
-                    resetModel(["True", "False"], app.settings.skipDownloaded);
+                    resetModel(["False", "True"], app.settings.skipDownloaded);
                 }
 
                 //True false
