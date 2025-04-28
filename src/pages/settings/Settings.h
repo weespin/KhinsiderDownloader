@@ -12,15 +12,16 @@ class Settings : public QObject {
 
     Q_ENUM(DownloadQuality)
 
-    Q_PROPERTY(QString downloadPath READ downloadPath NOTIFY downloadPathChanged)
+    Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged)
     Q_PROPERTY(bool enableLogging READ enableLogging WRITE setEnableLogging NOTIFY enableLoggingChanged)
-    Q_PROPERTY(int downloadThreads READ downloadThreads NOTIFY downloadThreadsChanged)
+    Q_PROPERTY(int downloadThreads READ downloadThreads WRITE setDownloadThreads NOTIFY downloadThreadsChanged)
     Q_PROPERTY(
-        int maxConcurrentDownloadsPerThread READ maxConcurrentDownloadsPerThread NOTIFY
-        maxConcurrentDownloadsPerThreadChanged)
-    Q_PROPERTY(DownloadQuality preferredAudioQuality READ preferredAudioQuality NOTIFY preferredAudioQualityChanged)
-    Q_PROPERTY(bool downloadArt READ downloadArt NOTIFY downloadArtChanged)
-    Q_PROPERTY(bool skipDownloaded READ skipDownloaded NOTIFY settingsChanged)
+        int maxConcurrentDownloadsPerThread READ maxConcurrentDownloadsPerThread
+        WRITE setMaxConcurrentDownloadsPerThread NOTIFY maxConcurrentDownloadsPerThreadChanged)
+
+    Q_PROPERTY(DownloadQuality preferredAudioQuality READ preferredAudioQuality WRITE setPreferredAudioQuality NOTIFY preferredAudioQualityChanged)
+    Q_PROPERTY(bool downloadArt READ downloadArt WRITE setDownloadArt NOTIFY downloadArtChanged)
+    Q_PROPERTY(bool skipDownloaded READ skipDownloaded WRITE setSkipDownloaded NOTIFY settingsChanged)
 
 public:
     explicit Settings(QObject *parent = nullptr)

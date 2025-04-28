@@ -15,7 +15,7 @@ class App : public QObject {
     Q_PROPERTY(DownloaderController* downloaderController READ downloaderController CONSTANT)
     Q_PROPERTY(AboutController* aboutController READ aboutController CONSTANT)
     Q_PROPERTY(LogController* logController READ logController)
-    Q_PROPERTY(Settings* settings READ settings)
+    Q_PROPERTY(Settings* settings READ settings NOTIFY settingsChanged)
 
 public:
     explicit App(QObject *parent = nullptr)
@@ -55,8 +55,10 @@ private:
 
         connect(m_searchController, &SearchController::onDownloadAllAddRequest,
                 m_downloadController, &DownloaderController::requestAddAlbums);
+        connect(m_settings, &Settings::settingsChanged, this , &App::settingsChanged);
     }
-
+signals:
+    void settingsChanged();
 private:
     SettingsController *m_settingsController;
     SearchController *m_searchController;

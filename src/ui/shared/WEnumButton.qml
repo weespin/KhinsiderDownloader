@@ -1,14 +1,40 @@
 import QtQuick 2.15
-//TODO PLEASE REMAKE ME! MY PARENTS ARE FORCING TO CHANGE MY INDEX BECAUSE I DON'T KNOW HOW TO RESET MY MODEL PROPERLY!
+
 Rectangle {
     signal valueChanged();
     property int selectedIndex: 0
     property alias model: internalModel
+
+    function resetModel(newItems, newIndex) {
+        internalModel.clear();
+
+        for (let i = 0; i < newItems.length; i++) {
+            internalModel.append({text: newItems[i]});
+        }
+
+        if (newIndex !== undefined) {
+            selectedIndex = newIndex;
+        } else if (selectedIndex >= internalModel.count) {
+            selectedIndex = 0;
+        }
+
+        updateLabelText();
+    }
+
+    function updateLabelText() {
+        if (internalModel.count > 0 && selectedIndex < internalModel.count) {
+            buttonlabel.text = internalModel.get(selectedIndex).text;
+        }
+    }
+
+    onSelectedIndexChanged: updateLabelText()
+
     ListModel {
         id: internalModel
         ListElement { text: "First";}
         ListElement { text: "Second";}
     }
+
     property alias fontSize: buttonlabel.font.pointSize
     property alias label: buttonlabel.text
     id: buttonRect
@@ -17,6 +43,7 @@ Rectangle {
     height: 40
     color: "#6c98c4"
     scale: 1.0
+
     Behavior on color {
         ColorAnimation {
             duration: 150
@@ -32,20 +59,16 @@ Rectangle {
         id: growAnim
         NumberAnimation { target: buttonRect; property: "scale"; to: 1.0; duration: 100 }
     }
+
     SequentialAnimation {
         id: fadeIn
         NumberAnimation { target: buttonlabel; property: "opacity"; to: 1; duration: 100 }
     }
+
     SequentialAnimation {
         id: fadeOut
         NumberAnimation { target: buttonlabel; property: "opacity"; to: 0; duration: 100 }
-        onStopped:
-        {
-            //wrap imageTarget
-            if(buttonRect.selectedIndex > internalModel.count)
-            {
-                buttonRect.selectedIndex = 0;
-            }
+        onStopped: {
             buttonRect.selectedIndex = (buttonRect.selectedIndex + 1) % internalModel.count;
             valueChanged();
             fadeIn.start();
@@ -63,8 +86,7 @@ Rectangle {
         onReleased: {
             growAnim.running = true
         }
-        onClicked:
-        {
+        onClicked: {
             fadeOut.start()
         }
     }
@@ -72,7 +94,7 @@ Rectangle {
     Text {
         id: buttonlabel
         color: "white"
-        text: internalModel.get(selectedIndex).text
+        text: ""
         elide: Text.ElideRight
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
@@ -81,5 +103,9 @@ Rectangle {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         font.pointSize: 10
+    }
+
+    Component.onCompleted: {
+        updateLabelText();
     }
 }

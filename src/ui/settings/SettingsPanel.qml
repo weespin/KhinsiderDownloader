@@ -118,7 +118,7 @@ Rectangle {
                                 }
                                 else
                                 {
-                                     Qt.openUrlExternally("file://" +  app.logController.logDir);
+                                    Qt.openUrlExternally("file://" +  app.logController.logDir);
                                 }
 
 
@@ -138,20 +138,10 @@ Rectangle {
                     app.settings.setEnableLogging(selectedIndex == 0);
                 }
                 selectedIndex: app.settings.enableLogging ? 0 : 1;
-                Component.onCompleted: {
-                    model.clear();
-                    model.append({
-                                     text: "True"
-                                 });
-                    model.append({
-                                     text: "False"
-                                 });
-                    selectedIndex = 1
-                    selectedIndex = 0
-                    selectedIndex = app.settings.enableLogging ? 0 : 1;
+                Component.onCompleted:
+                {
+                    resetModel(["True", "False"], app.settings.enableLogging);
                 }
-
-                //True false
             }
         }
         Row {
@@ -267,21 +257,10 @@ Rectangle {
                     app.settings.setPreferredAudioQualityInt(selectedIndex);
                 }
                 selectedIndex: app.settings.preferredAudioQuality;
-                Component.onCompleted: {
-                    model.clear();
-                    model.append({
-                                     text: "MP3"
-                                 });
-                    model.append({
-                                     text: "Best"
-                                 });
-                    selectedIndex = 1
-                    selectedIndex = 0
-                    selectedIndex = app.settings.preferredAudioQuality;
+                Component.onCompleted:
+                {
+                    resetModel(["MP3", "Best"], app.settings.preferredAudioQuality);
                 }
-
-
-                //MP3/Best
             }
         }
         Row {
@@ -314,17 +293,9 @@ Rectangle {
                     app.settings.setDownloadArt(selectedIndex == 0);
                 }
                 selectedIndex: app.settings.downloadArt ? 0 : 1;
-                Component.onCompleted: {
-                    model.clear();
-                    model.append({
-                                     text: "True"
-                                 });
-                    model.append({
-                                     text: "False"
-                                 });
-                    selectedIndex = 1
-                    selectedIndex = 0
-                    selectedIndex = app.settings.downloadArt ? 0 : 1;
+                Component.onCompleted:
+                {
+                    resetModel(["True", "False"], app.settings.downloadArt);
                 }
 
             }
@@ -363,17 +334,9 @@ Rectangle {
                     app.settings.setSkipDownloaded(selectedIndex == 0);
                 }
                 selectedIndex: app.settings.skipDownloaded ? 0 : 1;
-                Component.onCompleted: {
-                    model.clear();
-                    model.append({
-                                     text: "True"
-                                 });
-                    model.append({
-                                     text: "False"
-                                 });
-                    selectedIndex = 1
-                    selectedIndex = 0
-                    selectedIndex = app.settings.skipDownloaded ? 0 : 1;
+                Component.onCompleted:
+                {
+                    resetModel(["True", "False"], app.settings.skipDownloaded);
                 }
 
                 //True false
@@ -410,10 +373,8 @@ Rectangle {
                 {
                     app.aboutController.checkForUpdates();
                 }
-                label: "Check"
+                label: "Run Check"
             }
-
-
         }
 
     }

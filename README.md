@@ -19,8 +19,9 @@
 -   [Latest Release (Windows & Linux)](https://github.com/weespin/KhinsiderDownloader/releases) 
     
 -   [Windows/Linux Nightly Builds (Artifact)](https://nightly.link/weespin/KhinsiderDownloader/workflows/build/master)
-## Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=weespin/khinsiderdownloader&type=Date)](https://www.star-history.com/#weespin/khinsiderdownloader&Date)
+
+## 🌟 Star the Project
+If you like KhinsiderDownloader, feel free to leave a star on GitHub to show your support!
 
 ## 🛠️ Building From Source
 
