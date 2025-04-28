@@ -378,6 +378,40 @@ Rectangle {
 
                 //True false
             }
+        }
+        Row {
+            height: 40
+            spacing: 10
+            width: parent.width
+
+            Rectangle {
+                color: "#6c98c4"
+                height: 40
+                radius: 10
+                width: maincolumn.width * 0.7
+
+                Text {
+                    anchors.fill: parent
+                    anchors.leftMargin: 8
+
+                    color: "#ffffff"
+                    font.pointSize: 12
+                    text: "Check for Updates"
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+
+            WButton
+            {
+                height: parent.height
+                width: parent.width * 0.25
+                fontSize: 13
+                onClicked:
+                {
+                    app.aboutController.checkForUpdates();
+                }
+                label: "Check"
+            }
 
 
         }

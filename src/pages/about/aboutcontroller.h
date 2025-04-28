@@ -9,21 +9,14 @@ class AboutController : public QObject {
 
 public:
     explicit AboutController(QObject *parent = nullptr);
-
-    void checkForUpdates();
-
 signals:
     void foundNewUpdate(const QString &version);
-
 public slots:
     void onUpdateCheckFinished(QNetworkReply *reply);
-
-
+    void checkForUpdates();
     QString appVersion() const;
-
 signals:
     void appVersionChanged();
-
 private:
     bool isNewVersion(const QString &latestVersion, const QString &currentVersion);
 

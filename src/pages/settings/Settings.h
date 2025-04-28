@@ -13,7 +13,7 @@ class Settings : public QObject {
     Q_ENUM(DownloadQuality)
 
     Q_PROPERTY(QString downloadPath READ downloadPath NOTIFY downloadPathChanged)
-    Q_PROPERTY(bool enableLogging READ enableLogging NOTIFY setEnableLogging)
+    Q_PROPERTY(bool enableLogging READ enableLogging WRITE setEnableLogging NOTIFY enableLoggingChanged)
     Q_PROPERTY(int downloadThreads READ downloadThreads NOTIFY downloadThreadsChanged)
     Q_PROPERTY(
         int maxConcurrentDownloadsPerThread READ maxConcurrentDownloadsPerThread NOTIFY
