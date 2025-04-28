@@ -71,7 +71,7 @@ public:
 
     int downloadedSize() const {
         int totaldownloadedSize = 0;
-        for (const auto &song: m_songs) {
+        for (const auto song: m_songs) {
             totaldownloadedSize += song->downloadedSize();
         }
         return totaldownloadedSize;
@@ -79,7 +79,7 @@ public:
 
     int downloadSpeed() const {
         int totaldownloadSpeed = 0;
-        for (const auto &song: m_songs) {
+        for (const auto song: m_songs) {
             if (!song->downloaded()) {
                 totaldownloadSpeed += song->downloadSpeed();
             }
@@ -89,7 +89,8 @@ public:
 
     int downloadedSongs() const {
         int totaldownloadedSongs = 0;
-        for (const auto &song: m_songs) {
+        for (const auto song: m_songs)
+        {
             if (song->downloaded()) {
                 totaldownloadedSongs++;
             }
