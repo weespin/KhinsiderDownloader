@@ -14,6 +14,7 @@ class Album : public QObject {
     Q_PROPERTY(QString type READ type WRITE setType NOTIFY metadataChanged)
     Q_PROPERTY(QString year READ year WRITE setYear NOTIFY metadataChanged)
     Q_PROPERTY(QString publisher READ publisher WRITE setPublisher NOTIFY metadataChanged)
+    Q_PROPERTY(QString developer READ developer WRITE setDeveloper NOTIFY metadataChanged)
     Q_PROPERTY(QString albumLink READ albumLink WRITE setAlbumLink NOTIFY metadataChanged)
     Q_PROPERTY(bool isPlaylist READ isPlaylist WRITE setIsPlaylist NOTIFY metadataChanged)
     Q_PROPERTY(QSet<QString> albumImage READ albumImage WRITE setAlbumImage NOTIFY metadataChanged)
@@ -35,6 +36,7 @@ public:
     QString type() const { return QString::fromStdString(m_type); }
     QString year() const { return QString::fromStdString(m_year); }
     QString publisher() const { return QString::fromStdString(m_publisher); }
+    QString developer() const { return QString::fromStdString(m_developer); }
     QString albumLink() const { return QString::fromStdString(m_albumLink); }
     bool isPlaylist() const { return m_isPlaylist; }
     QSet<QString> albumImage() const { return m_albumImage; }
@@ -124,6 +126,13 @@ public:
     void setPublisher(const QString &publisher) {
         if (m_publisher != publisher.toStdString()) {
             m_publisher = publisher.toStdString();
+            emit metadataChanged();
+        }
+    }
+
+    void setDeveloper(const QString &developer) {
+        if (m_developer != developer.toStdString()) {
+            m_developer = developer.toStdString();
             emit metadataChanged();
         }
     }
@@ -255,6 +264,7 @@ private:
     std::string m_name;
     std::string m_type;
     std::string m_year;
+    std::string m_developer;
     std::string m_publisher;
     std::string m_albumLink;
     bool m_isPlaylist = false;

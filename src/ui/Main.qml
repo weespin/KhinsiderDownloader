@@ -180,6 +180,9 @@ Window {
                             slider.jump(leftaboutbutton);
                         }
                     }
+                    Item {
+                        Layout.preferredHeight: 5
+                    }
                 }
             }
             // Center panel

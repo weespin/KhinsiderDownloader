@@ -16,10 +16,12 @@
 
 ## 📥 Download
 
--   [[NOT AVAILABLE] Latest Release (Windows & Linux)](https://github.com/weespin/KhinsiderDownloader/releases/latest) 
+-   [Latest Release (Windows & Linux)](https://github.com/weespin/KhinsiderDownloader/releases) 
     
--   [Windows/Linux Nightly Builds (Artifact)](https://nightly.link/weespin/KhinsiderDownloader/workflows/build/experimental?preview)
-  
+-   [Windows/Linux Nightly Builds (Artifact)](https://nightly.link/weespin/KhinsiderDownloader/workflows/build/master)
+## Star History
+[![Star History Chart](https://api.star-history.com/svg?repos=weespin/khinsiderdownloader&type=Date)](https://www.star-history.com/#weespin/khinsiderdownloader&Date)
+
 ## 🛠️ Building From Source
 
 ### Windows

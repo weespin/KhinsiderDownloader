@@ -105,15 +105,13 @@ Item {
                 // Status
                 ColumnLayout {
                     height: parent.height * 0.2 - leftColumn.spacing
-                    Layout.alignment: Qt.AlignBottom
-                    Layout.bottomMargin: 10
                     spacing: 10
                     width: parent.width
                     WButton {
 
                         id: wButton
                         Layout.alignment: Qt.AlignCenter
-                        Layout.preferredHeight: 50
+                        Layout.preferredHeight: 45
 
                         Layout.preferredWidth: parent.width * 0.8
                         label: "Import"
@@ -126,7 +124,7 @@ Item {
                     }
                     WButton {
                         id: stopButton
-                        Layout.preferredHeight: 50
+                        Layout.preferredHeight: 45
                         Layout.preferredWidth: parent.width * 0.8
                         Layout.alignment: Qt.AlignCenter
                         onClicked:
@@ -134,6 +132,12 @@ Item {
                             app.downloaderController.downloaderVM.cancelAllDownloads();
                         }
                         label: "Cancel All"
+                    }
+                    Item
+                    {
+                        //Spacer
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 10
                     }
                 }
             }

@@ -287,13 +287,22 @@ jobs:
           if [ -d "release-artifacts/linux-release-${{ needs.prebuild.outputs.version }}" ]; then
             cd release-artifacts/linux-release-${{ needs.prebuild.outputs.version }}
             find . -name "*.zip" -exec unzip {} \;
-            find . -name "*.AppImage" -exec cp {} ../../release-assets/ \;
+            for appimage in $(find . -name "*.AppImage"); do
+                cp "$appimage" ../../release-assets/KhinsiderDownloader-${{ steps.get_version.outputs.version }}-linux-x86_64.AppImage
+            done
             cd ../..
           fi
           
           # Copy Windows installer to release assets
           if [ -d "release-artifacts/windows-installer-${{ needs.prebuild.outputs.version }}" ]; then
-            cp release-artifacts/windows-installer-${{ needs.prebuild.outputs.version }}/KhinsiderInstaller.exe release-assets/KhinsiderInstaller-${{ steps.get_version.outputs.version }}.exe
+            cp release-artifacts/windows-installer-${{ needs.prebuild.outputs.version }}/KhinsiderInstaller.exe release-assets/KhinsiderDownloader-${{ steps.get_version.outputs.version }}-win-x86_64-installer.exe
+          fi
+          
+          # Copy Windows zip file
+          if [ -d "release-artifacts/windows-release-${{ needs.prebuild.outputs.version }}" ]; then
+            cd release-artifacts/windows-release-${{ needs.prebuild.outputs.version }}
+            zip -r ../../release-assets/KhinsiderDownloader-${{ steps.get_version.outputs.version }}-win-x86_64.zip *
+            cd ../..
           fi
           
           # List all prepared assets
