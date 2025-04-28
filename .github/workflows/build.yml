@@ -49,6 +49,7 @@ jobs:
       
       - name: Increment APP_VERSION
         if: steps.check_flags.outputs.skip_version_bump != 'true'
+        id: version_bump
         run: |
           VERSION=$(cat APP_VERSION)
           BASE=$(echo "$VERSION" | sed 's/-.*//')
@@ -75,6 +76,7 @@ jobs:
             NEW_VERSION="$NEW_VERSION-$SUFFIX"
           fi
           echo "$NEW_VERSION" > APP_VERSION
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
       
       - name: Bump resource.rc
         if: steps.check_flags.outputs.skip_version_bump != 'true'
@@ -96,7 +98,11 @@ jobs:
       - name: Get Version
         id: get_version
         run: |
-          echo "version=$(cat APP_VERSION)" >> $GITHUB_OUTPUT
+          if [ "${{ steps.check_flags.outputs.skip_version_bump }}" != "true" ] && [ -n "${{ steps.version_bump.outputs.new_version }}" ]; then
+            echo "version=${{ steps.version_bump.outputs.new_version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=$(cat APP_VERSION)" >> $GITHUB_OUTPUT
+          fi
           
   windows_build:
     needs: prebuild
@@ -150,7 +156,15 @@ jobs:
       - name: Build with CMake
         env:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+          APP_VERSION: ${{ needs.prebuild.outputs.version }}
         run: |
+          # Update APP_VERSION file with the value from prebuild job
+          echo "$env:APP_VERSION" | Out-File -FilePath APP_VERSION -NoNewline -Encoding ASCII
+          # Update version.rc file
+          cd scripts/shared
+          python updateversion.py
+          cd ../..
+          
           mkdir build
           cd build
           cmake .. -DCMAKE_TOOLCHAIN_FILE="C:\vcpkg\scripts\buildsystems\vcpkg.cmake" -DCMAKE_BUILD_TYPE=Release
@@ -190,6 +204,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Update APP_VERSION file
+        run: |
+          echo "${{ needs.prebuild.outputs.version }}" > APP_VERSION
+          echo "Updated APP_VERSION to ${{ needs.prebuild.outputs.version }}"
 
       - name: Cache Qt
         uses: actions/cache@v4
@@ -264,12 +283,12 @@ jobs:
             echo "create_release=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Get version from APP_VERSION
+      - name: Get version for release
         id: get_version
         if: steps.check_release.outputs.create_release == 'true'
         run: |
-          VERSION=$(cat APP_VERSION)
-          CLEAN_VERSION=$(echo "$VERSION" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+          echo "Using version from prebuild job: ${{ needs.prebuild.outputs.version }}"
+          CLEAN_VERSION=$(echo "${{ needs.prebuild.outputs.version }}" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
           echo "version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
           echo "tag_version=v$CLEAN_VERSION" >> $GITHUB_OUTPUT
 

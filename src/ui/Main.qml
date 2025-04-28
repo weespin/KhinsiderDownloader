@@ -128,8 +128,8 @@ Window {
                         id: leftdownloadbutton
                         Layout.preferredHeight: 40
                         Layout.alignment: Qt.AlignTop
-                        iconSource: "../../icons/dl.svg"
-                        iconFallback: "qrc:/icons/dl.svg"
+                        iconFallback: "../../icons/dl.svg"
+                        iconSource: "qrc:/icons/dl.svg"
                         label: "Download"
                         onClicked: {
                             maincol.state = "downloadtab"
@@ -142,8 +142,8 @@ Window {
                         id: leftsearchbutton
                         Layout.preferredHeight: 40
                         Layout.alignment: Qt.AlignTop
-                        iconSource: "../../icons/search.svg"
-                        iconFallback: "qrc:/icons/search.svg"
+                        iconFallback: "../../icons/search.svg"
+                        iconSource: "qrc:/icons/search.svg"
                         label: "Search"
                         onClicked: {
                             maincol.state = "searchtab"
@@ -155,8 +155,8 @@ Window {
                         id: leftsettingsbutton
                         Layout.preferredHeight: 40
                         Layout.alignment: Qt.AlignTop
-                        iconSource: "../../icons/settings.svg"
-                        iconFallback: "qrc:/icons/settings.svg"
+                        iconFallback: "../../icons/settings.svg"
+                        iconSource: "qrc:/icons/settings.svg"
                         label: "Settings"
                         onClicked: {
                             maincol.state = "settingstab"
@@ -172,8 +172,8 @@ Window {
                         id: leftaboutbutton
                         Layout.preferredHeight: 45
                         Layout.alignment: Qt.AlignBottom
-                        iconSource: "../../icons/about.svg"
-                        iconFallback: "qrc:/icons/about.svg"
+                        iconFallback: "../../icons/about.svg"
+                        iconSource: "qrc:/icons/about.svg"
                         label: "About"
                         onClicked: {
                             maincol.state = "abouttab"

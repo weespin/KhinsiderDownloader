@@ -11,8 +11,8 @@ Rectangle {
     height: 700
     width: 400
     Connections {
-        target: app.settingsController.settingsVM
-        onUpdateFound: {
+        target: app.aboutController
+        function onFoundNewUpdate() {
             messageDialog.visible = true;
         }
     }

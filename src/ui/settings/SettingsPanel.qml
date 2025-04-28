@@ -118,7 +118,7 @@ Rectangle {
                                 }
                                 else
                                 {
-                                     Qt.openUrlExternally("file://" +  app.logController.logDir);
+                                    Qt.openUrlExternally("file://" +  app.logController.logDir);
                                 }
 
 
@@ -135,23 +135,13 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    app.settings.setSuppressLogs(selectedIndex == 0);
+                    app.settings.setEnableLogging(selectedIndex != 0);
                 }
-                selectedIndex: app.settings.suppressLogs ? 0 : 1;
-                Component.onCompleted: {
-                    model.clear();
-                    model.append({
-                                     text: "True"
-                                 });
-                    model.append({
-                                     text: "False"
-                                 });
-                    selectedIndex = 1
-                    selectedIndex = 0
-                    selectedIndex = app.settings.suppressLogs ? 0 : 1;
+                selectedIndex: app.settings.enableLogging ? 0 : 1;
+                Component.onCompleted:
+                {
+                    resetModel(["False", "True"], app.settings.enableLogging);
                 }
-
-                //True false
             }
         }
         Row {
@@ -199,13 +189,29 @@ Rectangle {
                 radius: 10
                 width: parent.width * 0.7
 
-                Text {
+                RowLayout
+                {
                     anchors.fill: parent
                     anchors.leftMargin: 8
-                    color: "#ffffff"
-                    font.pointSize: 12
-                    text: "Downloads per thread"
-                    verticalAlignment: Text.AlignVCenter
+                    anchors.rightMargin: 8
+                    Text
+                    {
+                        color: "#ffffff"
+                        font.pointSize: 12
+                        text: "Concurrent downloads per thread"
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    Item
+                    {
+                        Layout.fillWidth: true
+                    }
+                    Text {
+                        color: "#99ffffff"
+                        font.pointSize: 12
+                        text: "0 = no limit (recommended)"
+                        verticalAlignment: Text.AlignVCenter
+
+                    }
                 }
             }
             WNumberBox {
@@ -251,21 +257,10 @@ Rectangle {
                     app.settings.setPreferredAudioQualityInt(selectedIndex);
                 }
                 selectedIndex: app.settings.preferredAudioQuality;
-                Component.onCompleted: {
-                    model.clear();
-                    model.append({
-                                     text: "MP3"
-                                 });
-                    model.append({
-                                     text: "Best"
-                                 });
-                    selectedIndex = 1
-                    selectedIndex = 0
-                    selectedIndex = app.settings.preferredAudioQuality;
+                Component.onCompleted:
+                {
+                    resetModel(["MP3", "Best"], app.settings.preferredAudioQuality);
                 }
-
-
-                //MP3/Best
             }
         }
         Row {
@@ -295,20 +290,12 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    app.settings.setDownloadArt(selectedIndex == 0);
+                    app.settings.setDownloadArt(selectedIndex != 0);
                 }
                 selectedIndex: app.settings.downloadArt ? 0 : 1;
-                Component.onCompleted: {
-                    model.clear();
-                    model.append({
-                                     text: "True"
-                                 });
-                    model.append({
-                                     text: "False"
-                                 });
-                    selectedIndex = 1
-                    selectedIndex = 0
-                    selectedIndex = app.settings.downloadArt ? 0 : 1;
+                Component.onCompleted:
+                {
+                    resetModel([ "False", "True"], app.settings.downloadArt);
                 }
 
             }
@@ -344,26 +331,50 @@ Rectangle {
                 fontSize: 13
                 onValueChanged:
                 {
-                    app.settings.setSkipDownloaded(selectedIndex == 0);
+                    app.settings.setSkipDownloaded(selectedIndex != 0);
                 }
                 selectedIndex: app.settings.skipDownloaded ? 0 : 1;
-                Component.onCompleted: {
-                    model.clear();
-                    model.append({
-                                     text: "True"
-                                 });
-                    model.append({
-                                     text: "False"
-                                 });
-                    selectedIndex = 1
-                    selectedIndex = 0
-                    selectedIndex = app.settings.skipDownloaded ? 0 : 1;
+                Component.onCompleted:
+                {
+                    resetModel(["False", "True"], app.settings.skipDownloaded);
                 }
 
                 //True false
             }
+        }
+        Row {
+            height: 40
+            spacing: 10
+            width: parent.width
 
+            Rectangle {
+                color: "#6c98c4"
+                height: 40
+                radius: 10
+                width: maincolumn.width * 0.7
 
+                Text {
+                    anchors.fill: parent
+                    anchors.leftMargin: 8
+
+                    color: "#ffffff"
+                    font.pointSize: 12
+                    text: "Check for Updates"
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+
+            WButton
+            {
+                height: parent.height
+                width: parent.width * 0.25
+                fontSize: 13
+                onClicked:
+                {
+                    app.aboutController.checkForUpdates();
+                }
+                label: "Run Check"
+            }
         }
 
     }

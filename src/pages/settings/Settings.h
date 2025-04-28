@@ -12,15 +12,16 @@ class Settings : public QObject {
 
     Q_ENUM(DownloadQuality)
 
-    Q_PROPERTY(QString downloadPath READ downloadPath NOTIFY downloadPathChanged)
-    Q_PROPERTY(bool suppressLogs READ suppressLogs NOTIFY suppressLogsChanged)
-    Q_PROPERTY(int downloadThreads READ downloadThreads NOTIFY downloadThreadsChanged)
+    Q_PROPERTY(QString downloadPath READ downloadPath WRITE setDownloadPath NOTIFY downloadPathChanged)
+    Q_PROPERTY(bool enableLogging READ enableLogging WRITE setEnableLogging NOTIFY enableLoggingChanged)
+    Q_PROPERTY(int downloadThreads READ downloadThreads WRITE setDownloadThreads NOTIFY downloadThreadsChanged)
     Q_PROPERTY(
-        int maxConcurrentDownloadsPerThread READ maxConcurrentDownloadsPerThread NOTIFY
-        maxConcurrentDownloadsPerThreadChanged)
-    Q_PROPERTY(DownloadQuality preferredAudioQuality READ preferredAudioQuality NOTIFY preferredAudioQualityChanged)
-    Q_PROPERTY(bool downloadArt READ downloadArt NOTIFY downloadArtChanged)
-    Q_PROPERTY(bool skipDownloaded READ skipDownloaded NOTIFY settingsChanged)
+        int maxConcurrentDownloadsPerThread READ maxConcurrentDownloadsPerThread
+        WRITE setMaxConcurrentDownloadsPerThread NOTIFY maxConcurrentDownloadsPerThreadChanged)
+
+    Q_PROPERTY(DownloadQuality preferredAudioQuality READ preferredAudioQuality WRITE setPreferredAudioQuality NOTIFY preferredAudioQualityChanged)
+    Q_PROPERTY(bool downloadArt READ downloadArt WRITE setDownloadArt NOTIFY downloadArtChanged)
+    Q_PROPERTY(bool skipDownloaded READ skipDownloaded WRITE setSkipDownloaded NOTIFY settingsChanged)
 
 public:
     explicit Settings(QObject *parent = nullptr)
@@ -28,7 +29,7 @@ public:
     }
 
     QString downloadPath() { return m_downloadPath; }
-    bool suppressLogs() { return m_suppressLogs; }
+    bool enableLogging() { return m_enableLogging; }
     int downloadThreads() { return m_downloadThreads; }
     DownloadQuality preferredAudioQuality() { return m_preferredAudioQuality; }
 
@@ -39,7 +40,7 @@ public:
 signals:
     void downloadPathChanged();
 
-    void suppressLogsChanged();
+    void enableLoggingChanged();
 
     void downloadThreadsChanged();
 
@@ -67,7 +68,7 @@ public slots:
 
     void setDownloadArt(bool value) {
         m_downloadArt = value;
-        emit suppressLogsChanged();
+        emit downloadArtChanged();
         emit settingsChanged();
     }
 
@@ -85,10 +86,10 @@ public slots:
         }
     }
 
-    void setSuppressLogs(bool suppressLogs) {
-        if (suppressLogs != m_suppressLogs) {
-            m_suppressLogs = suppressLogs;
-            emit suppressLogsChanged();
+    void setEnableLogging(bool enableLogging) {
+        if (enableLogging != m_enableLogging) {
+            m_enableLogging = enableLogging;
+            emit enableLoggingChanged();
             emit settingsChanged();
         }
     }
@@ -121,7 +122,7 @@ public slots:
 private:
     QString m_downloadPath;
     bool m_downloadArt = false;
-    bool m_suppressLogs;
+    bool m_enableLogging;
     int m_maxConcurrentDownloadsPerThread = 5;
     int m_downloadThreads = 1;
     DownloadQuality m_preferredAudioQuality;

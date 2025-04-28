@@ -16,7 +16,7 @@ SettingsController::SettingsController(QObject *parent, Settings *settings): QOb
 
 void SettingsController::saveConfig() {
     m_settings.setValue("downloadPath", m_SettingsObject->downloadPath());
-    m_settings.setValue("suppressLogs", m_SettingsObject->suppressLogs());
+    m_settings.setValue("enableLogging", m_SettingsObject->enableLogging());
     m_settings.setValue("downloadThreads", m_SettingsObject->downloadThreads());
     m_settings.setValue("preferredAudioQuality", static_cast<int>(m_SettingsObject->preferredAudioQuality()));
     m_settings.setValue("maxConcurrentDownloadsPerThread",
