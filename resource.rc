@@ -4,8 +4,8 @@
 IDI_ICON1 ICON "icons/icon.ico"
 
 1 VERSIONINFO
-  FILEVERSION 3,0,3,42
-  PRODUCTVERSION 3,0,3,42
+  FILEVERSION 3,0,4,43
+  PRODUCTVERSION 3,0,4,43
   FILEOS 0x4
   FILETYPE 0x0
 BEGIN
@@ -15,12 +15,12 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "Weespin"
       VALUE "FileDescription", "Khinsider Downloader"
-      VALUE "FileVersion", "3,0,3,42"
+      VALUE "FileVersion", "3,0,4,43"
       VALUE "InternalName", "KhinsiderDownloader"
       VALUE "LegalCopyright", "Copyright © 2025 Weespin"
       VALUE "OriginalFilename", "KhinsiderDownloader.exe"
       VALUE "ProductName", "Khinsider Downloader"
-      VALUE "ProductVersion", "3,0,3,42"
+      VALUE "ProductVersion", "3,0,4,43"
     END
   END 
   
