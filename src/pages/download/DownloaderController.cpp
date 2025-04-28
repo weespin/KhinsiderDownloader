@@ -84,12 +84,14 @@ void DownloaderController::fetchFullAlbumData(QSharedPointer<Album> album) {
 
 void DownloaderController::onAlbumDataFetched(QSharedPointer<Album> album, DownloadQuality quality) {
     processSongDownloads(album, quality);
+}
+
+void DownloaderController::processSongDownloads(QSharedPointer<Album> album, DownloadQuality quality)
+{
     if (m_settings->downloadArt()) {
         processArtDownloads(album);
     }
-}
 
-void DownloaderController::processSongDownloads(QSharedPointer<Album> album, DownloadQuality quality) {
     for (const auto &song: album->songs())
     {
         if (!song->getAllDownloadLinksParsed()) {
@@ -398,7 +400,9 @@ void DownloaderController::onDownloadListAdd(QSharedPointer<Album> album, Downlo
 
     if (!album->isInfoParsed()) {
         fetchFullAlbumData(album);
-    } else {
+    }
+    else
+    {
         processSongDownloads(album, quality);
     }
 }
