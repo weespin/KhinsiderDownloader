@@ -51,7 +51,8 @@ void LogController::messageHandler(QtMsgType type, const QMessageLogContext &con
         m_stream << logMsg << Qt::flush;
     }
 #ifdef QT_DEBUG
-    fprintf(stderr, "%s", logMsg.toLocal8Bit().constData());
+    QTextStream(stderr) << logMsg;
+    //fprintf(stderr, "%s", logMsg.toLocal8Bit().constData());
 #endif
 }
 

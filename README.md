@@ -106,6 +106,16 @@ If you want to contribute code:
 Found a bug?
  👉 [Open an Issue here](https://github.com/weespin/KhinsiderDownloader/issues)
 
+## ⚖️ Legal Disclaimer and Copyright Notice
+
+This application downloads music directly from [https://downloads.khinsider.com/](https://downloads.khinsider.com/). All music and related content are hosted and provided by the external website.
+
+Similar to torrent apps, this application does not host or store any music files on the server. It merely facilitates the download process from the external source. All music content is subject to the terms and conditions of the copyright holders and the external website.
+
+If you have any copyright concerns or wish to file a DMCA notice, please contact [Khinsider](https://downloads.khinsider.com/) directly. Any copyright issues should be reported to them, not to the developer of this application.
+
+Please respect the intellectual property rights of artists and content creators.
+
 ## 📜 License
 
 **KhinsiderDownloader**  
