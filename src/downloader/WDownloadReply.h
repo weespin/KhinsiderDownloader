@@ -38,6 +38,12 @@ public:
 
     virtual qint64 getDataSize() const = 0;
 
+    // Empty the buffer/file so a retried request starts from scratch
+    virtual void resetData() = 0;
+
+    // Drop anything received so far for good, used when the response turned out to be an HTTP error
+    virtual void discardData() = 0;
+
 public slots:
     void cancel() { m_canceled = true; }
 signals:
@@ -78,6 +84,14 @@ public:
 
     qint64 getDataSize() const override {
         return m_data.size();
+    }
+
+    void resetData() override {
+        m_data.clear();
+    }
+
+    void discardData() override {
+        m_data.clear();
     }
 
     // Get the data
@@ -133,6 +147,20 @@ public:
 
     qint64 getDataSize() const override {
         return m_file.size();
+    }
+
+    void resetData() override {
+        if (m_file.isOpen()) {
+            m_file.resize(0);
+            m_file.seek(0);
+        }
+    }
+
+    void discardData() override {
+        if (m_file.isOpen()) {
+            m_file.close();
+        }
+        QFile::remove(m_file.fileName());
     }
 
     QFile &getFile() { return m_file; }

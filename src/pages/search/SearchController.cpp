@@ -1,5 +1,4 @@
 #include "SearchController.h"
-#include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QQmlApplicationEngine>
 #include <libxml/HTMLparser.h>
@@ -12,7 +11,8 @@
 #include "parser/Album.h"
 
 SearchController::SearchController(QObject *parent) {
-    networkManager = new QNetworkAccessManager(this);
+    // Own manager (single worker) so lookups never queue behind a long download list
+    m_fetchManager = new AsyncDownloadManager(this);
     m_albumInfoVM = new SearchAlbumInfoViewModel(this);
     m_searchResultVM = new SearchResultModel(this);
 
@@ -35,21 +35,19 @@ SearchController::SearchController(QObject *parent) {
 void SearchController::doSearch(const QString &query) {
     emit searchStarted();
     QUrl url(SEARCH_URL + QUrl::toPercentEncoding(query) + "&albumListSize=compact");
-    QNetworkRequest request(url);
-    QNetworkReply *reply = networkManager->get(request);
+    auto *reply = new WDownloadReplyMemory(nullptr);
 
-    connect(reply, &QNetworkReply::finished, [this,reply]() {
-        if (reply->error() != QNetworkReply::NoError) {
-            qWarning() << "Request failed:" << reply->errorString();
+    connect(reply, &WDownloadReplyBase::downloadFinished, this, [this, reply](QNetworkReply::NetworkError error) {
+        if (error != QNetworkReply::NoError) {
+            qWarning() << "Search request failed, error:" << error;
             reply->deleteLater();
             return;
         }
 
-        QString html = reply->readAll();
+        const QByteArray html = reply->getData();
         reply->deleteLater();
 
-        std::string htmlStr = html.toStdString();
-        htmlDocPtr doc = htmlReadMemory(htmlStr.c_str(), htmlStr.size(), nullptr, nullptr,
+        htmlDocPtr doc = htmlReadMemory(html.constData(), html.size(), nullptr, nullptr,
                                         HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
         QVector<QSharedPointer<Album> > res;
         if (!doc)
@@ -60,7 +58,8 @@ void SearchController::doSearch(const QString &query) {
         KhinsiderParser::ParseSearchResults(doc, res);
         emit searchResultsReceived(res);
         xmlFreeDoc(doc);
-    });
+    }, Qt::QueuedConnection);
+    m_fetchManager->enqueueDownload(reply, url);
 }
 
 //TODO: Duplicated code! We have this already in DownloadController!
@@ -69,21 +68,20 @@ void SearchController::fetchFullAlbumData(QSharedPointer<Album> album) {
         return;
     }
     QUrl url(album->albumLink());
-    QNetworkRequest request(url);
-    QNetworkReply *reply = networkManager->get(request);
+    auto *reply = new WDownloadReplyMemory(nullptr);
 
-    connect(reply, &QNetworkReply::finished, [this,reply,album]() {
-        if (reply->error() != QNetworkReply::NoError) {
-            qWarning() << "Request failed:" << reply->errorString();
+    connect(reply, &WDownloadReplyBase::downloadFinished, this, [this, reply, album](QNetworkReply::NetworkError error) {
+        if (error != QNetworkReply::NoError) {
+            qWarning() << "Album info request failed, error:" << error;
+            album->setHasErrors(true);
             reply->deleteLater();
             return;
         }
 
-        QString html = reply->readAll();
+        const QByteArray html = reply->getData();
         reply->deleteLater();
 
-        std::string htmlStr = html.toStdString();
-        htmlDocPtr doc = htmlReadMemory(htmlStr.c_str(), htmlStr.size(), nullptr, nullptr,
+        htmlDocPtr doc = htmlReadMemory(html.constData(), html.size(), nullptr, nullptr,
                                         HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
 
         if (!doc)
@@ -101,5 +99,6 @@ void SearchController::fetchFullAlbumData(QSharedPointer<Album> album) {
         ImagePrecache::instance()->precache(album->albumImage());
         emit onFullFetched();
         xmlFreeDoc(doc);
-    });
+    }, Qt::QueuedConnection);
+    m_fetchManager->enqueueDownload(reply, url);
 }

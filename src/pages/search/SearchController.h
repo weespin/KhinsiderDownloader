@@ -2,12 +2,13 @@
 #define SEARCHCONTROLLER_H
 
 #include <QObject>
-#include <QNetworkAccessManager>
 #include <QString>
 
 #include "SearchAlbumInfoViewModel.h"
 #include "SearchResultModel.h"
 #include "parser/KhinsiderParser.h"
+#include "downloader/DownloadManager.h"
+#include "downloader/WDownloadReply.h"
 
 class Album;
 
@@ -44,7 +45,7 @@ public slots:
     }
 
 private:
-    QNetworkAccessManager *networkManager;
+    AsyncDownloadManager *m_fetchManager;
     SearchResultModel *m_searchResultVM;
     SearchAlbumInfoViewModel *m_albumInfoVM;
 };

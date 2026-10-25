@@ -20,8 +20,40 @@ if(MSVC)
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Quick Xml Network)
-find_package(CURL REQUIRED)
 find_package(LibXml2 REQUIRED)
+
+# The site's bot protection rejects stock libcurl by its TLS fingerprint. libcurl-impersonate
+# (https://github.com/lexiforest/curl-impersonate) is a drop-in libcurl that presents a browser one.
+# Point CMAKE_PREFIX_PATH at the directory holding its include/ and lib files.
+option(KHINSIDER_CURL_IMPERSONATE "Use libcurl-impersonate instead of stock libcurl" OFF)
+set(KHINSIDER_CURL_IMPERSONATE_TARGET "chrome146" CACHE STRING "Browser profile libcurl-impersonate should present")
+
+if(KHINSIDER_CURL_IMPERSONATE)
+    find_path(CURL_IMPERSONATE_INCLUDE_DIR curl/curl.h)
+    find_library(CURL_IMPERSONATE_LIBRARY NAMES curl-impersonate)
+    if(NOT CURL_IMPERSONATE_INCLUDE_DIR OR NOT CURL_IMPERSONATE_LIBRARY)
+        message(FATAL_ERROR "KHINSIDER_CURL_IMPERSONATE is ON but libcurl-impersonate was not found, add its location to CMAKE_PREFIX_PATH")
+    endif()
+    include(CheckSymbolExists)
+    set(CMAKE_REQUIRED_INCLUDES ${CURL_IMPERSONATE_INCLUDE_DIR})
+    set(CMAKE_REQUIRED_LIBRARIES ${CURL_IMPERSONATE_LIBRARY})
+    check_symbol_exists(curl_easy_impersonate "curl/curl.h" HAVE_CURL_EASY_IMPERSONATE)
+    unset(CMAKE_REQUIRED_INCLUDES)
+    unset(CMAKE_REQUIRED_LIBRARIES)
+    if(NOT HAVE_CURL_EASY_IMPERSONATE)
+        message(FATAL_ERROR "KHINSIDER_CURL_IMPERSONATE is ON but ${CURL_IMPERSONATE_LIBRARY} does not provide curl_easy_impersonate")
+    endif()
+    add_library(khinsider_curl INTERFACE)
+    target_include_directories(khinsider_curl INTERFACE ${CURL_IMPERSONATE_INCLUDE_DIR})
+    target_link_libraries(khinsider_curl INTERFACE ${CURL_IMPERSONATE_LIBRARY})
+    target_compile_definitions(khinsider_curl INTERFACE
+            KHINSIDER_CURL_IMPERSONATE
+            KHINSIDER_CURL_IMPERSONATE_TARGET="${KHINSIDER_CURL_IMPERSONATE_TARGET}")
+else()
+    find_package(CURL REQUIRED)
+    add_library(khinsider_curl INTERFACE)
+    target_link_libraries(khinsider_curl INTERFACE CURL::libcurl)
+endif()
 
 set(QML_IMPORT_PATH "${Qt6_DIR}/../../../qml" CACHE STRING "QML import paths")
 set(QML_IMPORT_PATH
@@ -87,7 +119,6 @@ qt_add_executable(appKhinsiderQT
 target_include_directories(appKhinsiderQT PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/parser"
-        ${CURL_INCLUDE_DIRS}
         ${LIBXML2_INCLUDE_DIRS}
         ${Qt6Network_INCLUDE_DIRS}
 )
@@ -137,7 +168,7 @@ set_target_properties(appKhinsiderQT PROPERTIES
 )
 
 target_link_libraries(appKhinsiderQT
-        PRIVATE Qt6::Quick Qt6::Xml Qt6::Network CURL::libcurl LibXml2::LibXml2
+        PRIVATE Qt6::Quick Qt6::Xml Qt6::Network khinsider_curl LibXml2::LibXml2
 )
 
 include(GNUInstallDirs)
