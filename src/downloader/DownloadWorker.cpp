@@ -129,10 +129,14 @@ void DownloadWorker::checkMultiInfo() {
 			if (m_activeDownloads.contains(easyHandle)) {
 				WDownloadReplyBase *downloadable = m_activeDownloads.value(easyHandle);
 
+				// The status has to be read before the handle is cleaned up
+				long httpStatus = 0;
+				curl_easy_getinfo(easyHandle, CURLINFO_RESPONSE_CODE, &httpStatus);
+
 				curl_multi_remove_handle(m_multiHandle, easyHandle);
 				curl_easy_cleanup(easyHandle);
 
-				handleDownloadFinished(downloadable, result);
+				handleDownloadFinished(downloadable, result, httpStatus);
 				//queue it's time to check itself!
 				QMetaObject::invokeMethod(this, "checkQueue", Qt::QueuedConnection);
 			}
@@ -264,7 +268,7 @@ int DownloadWorker::progressCallback(void *clientp, curl_off_t dltotal, curl_off
 	return 0;
 }
 
-void DownloadWorker::handleDownloadFinished(WDownloadReplyBase *downloadable, CURLcode result) {
+void DownloadWorker::handleDownloadFinished(WDownloadReplyBase *downloadable, CURLcode result, long httpStatus) {
 	if (!downloadable || !m_activeDownloads.values().contains(downloadable)) {
 		return;
 	}
@@ -283,7 +287,26 @@ void DownloadWorker::handleDownloadFinished(WDownloadReplyBase *downloadable, CU
 		return; // Should not happen
 	}
 
-	if (result == CURLE_OK) {
+	if (result == CURLE_OK && httpStatus >= 400) {
+		// libcurl reports a transfer that returned an error page as a success.
+		// Don't hand that body to the parsers or leave it behind as a file.
+		qWarning() << "Worker" << m_id << "- HTTP" << httpStatus << "from:" << downloadable->url().toString();
+
+		if (downloadable->isCanceled()) {
+			downloadable->discardData();
+			emit downloadable->downloadFinished(QNetworkReply::OperationCanceledError);
+		} else if (isRetryableHttpStatus(httpStatus) && downloadable->getCurrentRetryCount() < downloadable->getMaxRetryCount()) {
+			downloadable->incrementRetryCount();
+			emit downloadable->downloadRetry();
+
+			downloadable->resetData();
+			downloadable->setLastBytesRecieved(0);
+			scheduleRetry(downloadable);
+		} else {
+			downloadable->discardData();
+			emit downloadable->downloadFinished(mapHttpStatusToNetworkError(httpStatus));
+		}
+	} else if (result == CURLE_OK) {
 		qDebug() << "Worker" << m_id << "- Download successful from:" << downloadable->url().toString();
 
 		// Done, emit finished
@@ -301,7 +324,8 @@ void DownloadWorker::handleDownloadFinished(WDownloadReplyBase *downloadable, CU
 			downloadable->incrementRetryCount();
 			emit downloadable->downloadRetry();
 
-			// Re-queue for download
+			// Re-queue for download, starting from an empty buffer/file so the body isn't appended twice
+			downloadable->resetData();
 			downloadable->setLastBytesRecieved(0);
 
 			scheduleRetry(downloadable);
@@ -332,6 +356,28 @@ void DownloadWorker::scheduleRetry(WDownloadReplyBase *downloadable) {
 			<< "in" << m_retryInvetrval << "ms";
 
 	retryTimer->start(m_retryInvetrval);
+}
+
+bool DownloadWorker::isRetryableHttpStatus(long httpStatus) {
+	// 403 is included on purpose: the site's bot protection answers an otherwise valid request
+	// with a 403 every now and then, and the same request passes a moment later.
+	return httpStatus == 403 || httpStatus == 408 || httpStatus == 429 || httpStatus >= 500;
+}
+
+QNetworkReply::NetworkError DownloadWorker::mapHttpStatusToNetworkError(long httpStatus) {
+	switch (httpStatus) {
+		case 401:
+			return QNetworkReply::AuthenticationRequiredError;
+		case 403:
+			return QNetworkReply::ContentAccessDenied;
+		case 404:
+		case 410:
+			return QNetworkReply::ContentNotFoundError;
+		case 503:
+			return QNetworkReply::ServiceUnavailableError;
+		default:
+			return httpStatus >= 500 ? QNetworkReply::InternalServerError : QNetworkReply::UnknownContentError;
+	}
 }
 
 QNetworkReply::NetworkError DownloadWorker::mapCurlErrorToNetworkError(CURLcode curlError) {

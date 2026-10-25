@@ -30,7 +30,7 @@ public slots:
 private slots:
 	void checkMultiInfo();
 
-	void handleDownloadFinished(WDownloadReplyBase *downloadable, CURLcode result);
+	void handleDownloadFinished(WDownloadReplyBase *downloadable, CURLcode result, long httpStatus);
 
 	void checkCancellations();
 
@@ -87,5 +87,7 @@ private:
 	                            curl_off_t ulnow);
 
 	QNetworkReply::NetworkError mapCurlErrorToNetworkError(CURLcode curlError);
+	static QNetworkReply::NetworkError mapHttpStatusToNetworkError(long httpStatus);
+	static bool isRetryableHttpStatus(long httpStatus);
 };
 #endif
